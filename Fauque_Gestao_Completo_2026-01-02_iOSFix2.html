@@ -1,0 +1,3672 @@
+<!DOCTYPE html>
+<html lang="pt-br"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestão Jurídica – Fauque Advogados (v20)</title>
+
+<!-- Dados embutidos (usado no Exportar app completo). Vazio por padrão. -->
+<script id="__FAUQUE_EMBEDDED_STATE__">window.__FAUQUE_EMBEDDED_STATE__={"prazos":[],"cadastros":[{"id":"1f79043e-c968-4cec-9fdf-c4937da482eb","nome":"Thabas","aliases":["THABAS LTDA","THABAS"],"cpf":"","telefone":"","qualificacao":"","notas":""},{"id":"06cdb7ec-c4f2-46ee-864e-3605db241ae7","nome":"Martin","aliases":["MARTIN","MARTIN LTDA"],"cpf":"","telefone":"","qualificacao":"","notas":""}],"processos":[],"logoDataUrl":null,"lastFeedAt":1767390778206};</script>
+
+
+<!-- XLSX (opcional: importação). Se estiver offline, o app funciona sem importar. -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+  :root{
+    --bg:#0b0b0f;
+    --bg2:#0f1018;
+    --card:#12131b;
+    --text:#f8fafc;
+    --muted:#a1a1aa;
+    --line:rgba(255,255,255,.08);
+    --brand:#e11d48;
+    --ok:#22c55e;
+    --warn:#f59e0b;
+    --bad:#ef4444;
+    --shadow: 0 18px 50px rgba(0,0,0,.55);
+    --radius:16px;
+    --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", "Noto Sans", "Liberation Sans", sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:var(--font); color:var(--text);
+    background:
+      radial-gradient(1200px 700px at 20% -10%, rgba(225,29,72,.20), transparent 55%),
+      radial-gradient(900px 600px at 90% 0%, rgba(225,29,72,.12), transparent 60%),
+      linear-gradient(180deg, var(--bg), var(--bg2));
+  }
+
+  header{
+    position:sticky; top:0; z-index:50;
+    background: rgba(10,10,14,.68);
+    backdrop-filter: blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar{
+    max-width:1200px; margin:0 auto;
+    padding:14px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+  }
+  .topbar .brand{
+    display:flex; align-items:center; gap:12px;
+    min-width:320px;
+  }
+  .logoBox{
+    width:56px; height:56px;
+    border-radius:16px;
+    background: rgba(225,29,72,.08);
+    border:1px solid rgba(225,29,72,.35);
+    box-shadow: 0 10px 30px rgba(225,29,72,.16);
+    overflow:hidden;
+    display:grid; place-items:center;
+    flex:0 0 auto;
+  }
+  .logoBox img{width:100%; height:100%; object-fit:contain; display:block; padding:6px}
+  .logoFallback{
+    width:100%; height:100%;
+    display:grid; place-items:center;
+    font-size:22px; font-weight:900;
+    color: rgba(255,255,255,.90);
+  }
+  .topbar .brand h1{margin:0; font-size:14px; letter-spacing:.2px; line-height:1.1}
+  .topbar .brand .sub{margin-top:3px; font-size:12px; color:var(--muted)}
+
+  nav{
+    display:flex; flex-wrap:wrap; gap:8px;
+    align-items:center; justify-content:flex-end; flex:1;
+  }
+  .tab{
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.03);
+    color: var(--text);
+    padding:9px 12px;
+    border-radius: 999px;
+    cursor:pointer;
+    font-size:13px;
+    transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    user-select:none;
+  }
+  .tab:hover{transform: translateY(-1px); border-color: rgba(225,29,72,.35)}
+  .tab.active{
+    background: linear-gradient(180deg, rgba(225,29,72,.28), rgba(225,29,72,.12));
+    border-color: rgba(225,29,72,.55);
+    box-shadow: 0 10px 30px rgba(225,29,72,.12);
+  }
+
+  .badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:22px; padding:2px 8px;
+    border-radius:999px;
+    border:1px solid rgba(225,29,72,.45);
+    background: rgba(225,29,72,.16);
+    font-size:12px; font-weight:900;
+    margin-left:6px;
+  }
+
+  .status-pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.03);
+    color: var(--muted);
+    font-size:12px;
+    white-space:nowrap;
+  }
+  .dot{
+    width:8px; height:8px; border-radius:50%;
+    background: var(--brand);
+    box-shadow: 0 0 0 4px rgba(225,29,72,.15);
+  }
+
+  main{max-width:1200px; margin:0 auto; padding:18px 16px 80px;}
+  section{display:none; animation: fade .14s ease-out}
+  section.active{display:block}
+  @keyframes fade{from{opacity:.7; transform: translateY(2px)} to{opacity:1; transform: translateY(0)}}
+
+  .grid{display:grid; grid-template-columns:1fr; gap:14px;}
+  @media(min-width:980px){.grid{grid-template-columns:1fr 1fr}}
+
+  .card{
+    background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.02));
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    padding:14px;
+  }
+  .soft{
+    background: linear-gradient(180deg, rgba(225,29,72,.08), rgba(255,255,255,.02));
+    border-color: rgba(225,29,72,.22);
+  }
+  .topline{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:10px;}
+  .topline h3{margin:0; font-size:15px; letter-spacing:.2px}
+  .hint{font-size:12px; color:var(--muted)}
+  .muted{color:var(--muted)}
+  .mono{font-family:var(--mono)}
+  .linklike{color:inherit; text-decoration:none; cursor:pointer}
+  .linklike:hover{ text-decoration:underline; text-decoration-color: rgba(225,29,72,.85); }
+
+  .kpis{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:10px;}
+  @media(min-width:520px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  .kpi{
+    padding:12px; border-radius:14px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.025);
+  }
+  .kpi .lbl{font-size:12px; color:var(--muted); margin-bottom:4px}
+  .kpi .val{font-size:18px; font-weight:900}
+  .kpi.brand{border-color: rgba(225,29,72,.30)}
+  .kpi.ok{border-color: rgba(34,197,94,.22)}
+  .kpi.warn{border-color: rgba(245,158,11,.22)}
+
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;}
+  .field{flex:1; min-width:180px;}
+  label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px;}
+  input, select, textarea{
+    width:100%;
+    padding:10px 12px;
+    border-radius: 14px;
+    border:1px solid var(--line);
+    outline:none;
+    background: rgba(0,0,0,.20);
+    color: var(--text);
+    transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  input:focus, select:focus, textarea:focus{
+    border-color: rgba(225,29,72,.55);
+    box-shadow: 0 0 0 4px rgba(225,29,72,.14);
+    background: rgba(0,0,0,.28);
+  }
+  textarea{min-height:84px; resize:vertical;}
+
+  .btn{
+    padding:10px 12px;
+    border-radius: 999px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.03);
+    color: var(--text);
+    cursor:pointer;
+    transition: transform .12s ease, border-color .12s ease, background .12s ease, opacity .12s ease;
+    user-select:none;
+  }
+  .btn:hover{transform: translateY(-1px); border-color: rgba(225,29,72,.35)}
+  .btn:active{transform: translateY(0px)}
+  .btn.primary{
+    background: linear-gradient(180deg, rgba(225,29,72,.95), rgba(225,29,72,.78));
+    border-color: rgba(225,29,72,.9);
+    font-weight:800;
+  }
+  .btn.danger{
+    background: rgba(239,68,68,.10);
+    border-color: rgba(239,68,68,.40);
+    color: #fecaca;
+  }
+  .btn.small{padding:8px 10px; font-size:12px}
+  .btn.ghost{background: transparent;}
+  .btn:disabled{opacity:.55; cursor:not-allowed; transform:none}
+
+  .tablewrap{
+    overflow:auto;
+    max-height: 520px;
+    border:1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(0,0,0,.18);
+  }
+  table{width:100%; border-collapse:collapse; min-width: 760px;}
+  th, td{
+    border-bottom:1px solid rgba(255,255,255,.06);
+    padding:10px 10px;
+    text-align:left;
+    vertical-align:top;
+  }
+  th{
+    position: sticky; top:0;
+    background: rgba(10,10,14,.92);
+    backdrop-filter: blur(10px);
+    font-size:12px;
+    color: var(--muted);
+    font-weight:800;
+    z-index:1;
+  }
+  tr:hover td{background: rgba(255,255,255,.02)}
+  .status{font-weight:900; text-transform:uppercase; font-size:11px; letter-spacing:.6px}
+  .status.ok{color: var(--ok)}
+  .status.warn{color: var(--warn)}
+  .status.bad{color: var(--bad)}
+  .status.mono{font-family: var(--mono); text-transform:none; letter-spacing:.2px}
+
+  .subtabs{display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 12px}
+  .subtab{
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.02);
+    color: var(--text);
+    padding:8px 10px;
+    border-radius: 999px;
+    cursor:pointer;
+    font-size:12px;
+  }
+  .subtab.active{
+    background: linear-gradient(180deg, rgba(225,29,72,.28), rgba(225,29,72,.10));
+    border-color: rgba(225,29,72,.55);
+  }
+
+  .dropzone{
+    border:1.8px dashed rgba(255,255,255,.14);
+    background: rgba(255,255,255,.02);
+    border-radius: var(--radius);
+    padding:18px;
+    text-align:center;
+    color: var(--muted);
+    transition: border-color .12s ease, background .12s ease, color .12s ease;
+  }
+  .dropzone.dragover{
+    border-color: rgba(225,29,72,.70);
+    background: rgba(225,29,72,.10);
+    color: var(--text);
+  }
+  .log{
+    border:1px solid var(--line);
+    background: rgba(0,0,0,.20);
+    border-radius: var(--radius);
+    padding:10px 12px;
+    font-size:12px;
+    color:var(--muted);
+    white-space:pre-wrap;
+  }
+
+  .toast{
+    position: fixed; right: 16px; bottom: 16px; z-index: 80;
+    min-width: 260px; max-width: 420px;
+    padding:12px 14px;
+    border-radius: 16px;
+    border:1px solid var(--line);
+    background: rgba(10,10,14,.82);
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow);
+    display:none;
+  }
+  .toast.show{display:block; animation: pop .18s ease-out}
+  @keyframes pop{from{transform: translateY(8px); opacity:0} to{transform: translateY(0); opacity:1}}
+  .toast .t-title{font-weight:900; font-size:13px; margin-bottom:4px}
+  .toast .t-msg{font-size:12px; color: var(--muted)}
+  .toast.ok{border-color: rgba(34,197,94,.25)}
+  .toast.warn{border-color: rgba(245,158,11,.25)}
+  .toast.bad{border-color: rgba(239,68,68,.25)}
+  .toast.brand{border-color: rgba(225,29,72,.35)}
+
+  .modalOverlay{
+    position: fixed; inset: 0; z-index: 95;
+    background: rgba(0,0,0,.58);
+    display:none;
+    align-items:center; justify-content:center;
+    padding:16px;
+  }
+  .modalOverlay.show{display:flex}
+  .modal{
+    width:100%; max-width:760px;
+    border-radius: 18px;
+    border:1px solid var(--line);
+    background: rgba(10,10,14,.92);
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow);
+    padding:14px;
+  }
+  .modal .m-title{font-weight:900; font-size:14px; margin:0}
+  .modal .m-sub{font-size:12px; color:var(--muted); margin-top:4px}
+  .modal .m-actions{display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:12px}
+
+
+  /* Inline edit (comentário) */
+  .inlineEdit{
+    display:block;
+    width:100%;
+    text-align:left;
+    padding:8px 10px;
+    border-radius:12px;
+    border:1px dashed rgba(255,255,255,.16);
+    background: rgba(255,255,255,.02);
+    color: var(--text);
+    cursor:pointer;
+    transition: border-color .12s ease, background .12s ease, transform .12s ease;
+    font-size:12px;
+    line-height:1.2;
+  }
+  .inlineEdit:hover{
+    border-color: rgba(225,29,72,.45);
+    background: rgba(225,29,72,.06);
+    transform: translateY(-1px);
+  }
+  .inlineEdit .muted{color: var(--muted)}
+  .formHidden{display:none;}
+
+
+
+/* ===== Mobile improvements ===== */
+@media (max-width: 720px){
+  .topbar{flex-direction:column; align-items:stretch; gap:10px}
+  .brand{min-width:unset; width:100%}
+  nav{width:100%; justify-content:flex-start; overflow-x:auto; padding-bottom:6px}
+  nav::-webkit-scrollbar{height:6px}
+  nav::-webkit-scrollbar-thumb{background: rgba(255,255,255,.12); border-radius:999px}
+  .tab{flex:0 0 auto}
+  main{padding:14px 12px 80px}
+  .logoBox{width:48px; height:48px; border-radius:14px}
+  .logoBox img{padding:5px}
+  .row{align-items:stretch}
+  .field{min-width:unset}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tablewrap{max-height:unset}
+  table{min-width:0 !important}
+  th, td{white-space:normal}
+  td{word-break:break-word}
+}
+/* ===== end mobile ===== */
+</style>
+</head>
+
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand">
+      <div class="logoBox" title="Fauque Advogados">
+        <img id="logoImg" alt="Fauque Advogados" style="display:none">
+        <div id="logoFallback" class="logoFallback" style="display: grid;">⚖️</div>
+      </div>
+      <div>
+        <h1>Gestão Jurídica Fauque Advogados</h1>
+        <div class="sub">Prazos • padrão Fauque</div>
+      </div>
+    </div>
+
+    <nav>
+      <button type="button" class="tab" data-target="dashboard">Visão Geral</button>
+      <button type="button" class="tab" data-target="quadro">Quadro geral</button>
+      <button type="button" class="tab" data-target="prazos">Prazos <span class="badge" id="badgePrazos">0</span></button>
+      <button type="button" class="tab" data-target="processos">Todos os processos <span class="badge" id="badgeProcessos">0</span></button>
+      <button type="button" class="tab" data-target="clientes">Clientes</button>      <button class="tab active" data-target="admin">Administrador</button>
+      <span class="status-pill" id="statusbar"><span class="dot"></span>Última alteração: 02/01/2026 18:52</span>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- DASHBOARD -->
+  <section id="dashboard" class="">
+    <div class="grid">
+      <div class="card soft">
+        <div class="topline">
+          <h3>Visão Geral</h3>
+          <span class="hint">Dados salvos no navegador (local) • versão v23</span>
+        </div>
+        <div class="kpis">
+          <div class="kpi brand">
+            <div class="lbl">Prazos</div>
+            <div class="val" id="kpiPrazos">0</div>
+          </div>
+          <div class="kpi brand">
+            <div class="lbl">Cadastros</div>
+            <div class="val" id="kpiCadastros">2</div>
+          </div>
+          <div class="kpi warn">
+            <div class="lbl">Vence hoje</div>
+            <div class="val" id="kpiHoje">0</div>
+          </div>
+        </div>
+        <div class="hint" style="margin-top:10px">
+          Dica: use <span class="mono">Cadastros</span> para manter clientes fixos e vincular prazos com eficiência.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="topline">
+          <h3>Próximos 7 dias</h3>
+          <span class="hint">prazos</span>
+        </div>
+        <div id="listaProximos" class="muted"><div class="muted">Nenhum item nos próximos 7 dias.</div></div>
+      </div>
+    </div>
+  </section>
+
+<section id="quadro" class="">
+  <div class="grid">
+    <div class="card soft">
+      <div class="topline">
+        <h3>Quadro geral</h3>
+        <span class="hint">Indicadores para decisão estratégica</span>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi brand">
+          <div class="lbl">Total de processos</div>
+          <div class="val" id="qTotalProc">0</div>
+        </div>
+        <div class="kpi ok">
+          <div class="lbl">Ativos</div>
+          <div class="val" id="qAtivos">0</div>
+        </div>
+        <div class="kpi warn">
+          <div class="lbl">Baixados</div>
+          <div class="val" id="qBaixados">0</div>
+        </div>
+        <div class="kpi warn">
+          <div class="lbl">Arquivados</div>
+          <div class="val" id="qArquivados">0</div>
+        </div>
+        <div class="kpi brand">
+          <div class="lbl">Valor total (causa)</div>
+          <div class="val" id="qValorTotal">R$&nbsp;0,00</div>
+        </div>
+      </div>
+
+      <div class="kpis" style="margin-top:10px">
+        <div class="kpi">
+          <div class="lbl">Prazos abertos</div>
+          <div class="val" id="qPrazosAbertos">0</div>
+        </div>
+        <div class="kpi bad">
+          <div class="lbl">Prazos vencidos</div>
+          <div class="val" id="qPrazosVencidos">0</div>
+        </div>
+        <div class="kpi warn">
+          <div class="lbl">Vencem em 7 dias</div>
+          <div class="val" id="qPrazos7d">0</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Sem prazo</div>
+          <div class="val" id="qSemPrazo">0</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px; gap:10px; flex-wrap:wrap">
+        <div class="hint">Processo mais antigo: <span class="mono" id="qProcAntigo">—</span></div>
+        <div class="hint">Processo mais recente: <span class="mono" id="qProcRecente">—</span></div>
+      </div>
+    </div>
+
+    <div class="card soft">
+      <div class="topline">
+        <h3>Destaques</h3>
+        <span class="hint">Maiores valores e distribuição</span>
+      </div>
+      <div class="hint" style="margin:6px 0 10px">Top 5 por valor da causa</div>
+      <div style="overflow:auto; border:1px solid var(--line); border-radius:var(--radius); background: rgba(0,0,0,.18);">
+        <table style="min-width:unset">
+          <thead>
+            <tr>
+              <th>Processo</th>
+              <th>Partes</th>
+              <th style="text-align:right">Valor</th>
+              <th>Distribuição</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="qTopValores"><tr><td colspan="5" class="muted">Sem valores cadastrados.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+  <!-- PRAZOS -->
+  <section id="prazos" class="">
+    <div class="card">
+      <div class="topline">
+        <h3>Prazos</h3>
+        <span class="hint">Dias úteis e corridos • editar/excluir</span>
+      </div>
+
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div class="field" style="min-width:260px; flex:1">
+          <label>Busca (cliente / processo / nome / comentário)</label>
+          <input id="prazoBusca" placeholder="ex: Thabas, Martin, 500..., contestação...">
+        </div>
+        <div class="field" style="max-width:260px">
+          <label>Ordenar</label>
+          <select id="prazoOrdem">
+            <option value="dataAsc">Data (crescente)</option>
+            <option value="dataDesc">Data (decrescente)</option>
+            <option value="restanteAsc">Dias corridos restantes (menor → maior)</option>
+            <option value="restanteDesc">Dias corridos restantes (maior → menor)</option>
+          </select>
+        </div>
+        <div class="field" style="max-width:220px">
+          <label style="display:flex; gap:10px; align-items:center;">
+            <input type="checkbox" id="prazoMostrarArquivados">
+            Mostrar arquivados (baixados/vencidos)
+          </label>
+        </div>
+        <div style="min-width:220px; display:flex; gap:8px; justify-content:flex-end; align-items:flex-end;">
+          <button class="btn primary" id="btnNovoPrazo" style="display: inline-flex;">+ Adicionar novo prazo</button>
+          <button class="btn ghost" id="btnFecharPrazo" style="display:none">Fechar</button>
+        </div>
+      </div>
+
+      <div id="prazoFormWrap" class="formHidden" style="margin-top:12px">
+        <div class="card soft" style="padding:14px">
+          <div class="topline" style="margin-bottom:6px">
+            <h3 style="margin:0; font-size:14px">Novo/editar prazo</h3>
+            <span class="hint">Obrigatório: nome + data</span>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Nome do prazo</label>
+              <input id="prazoDesc" placeholder="Ex: Prazo para contestação">
+            </div>
+            <div class="field" style="max-width:260px">
+              <label>Data final</label>
+              <input id="prazoData" type="date">
+            </div>
+          </div>
+
+          <details style="margin-top:10px">
+            <summary class="hint" style="cursor:pointer; user-select:none">Campos opcionais (cliente, processo, observações)</summary>
+            <div style="height:10px"></div>
+
+            <div class="row">
+              <div class="field">
+                <label>Cliente (texto / partes)</label>
+                <input id="prazoCliente" placeholder="Ex: THABAS LTDA x BANCO...">
+              </div>
+              <div class="field">
+                <label>Processo (opcional)</label>
+                <input id="prazoProcesso" placeholder="Ex: 5001234-56.2025.8.21.0001">
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="field">
+                <label>Observações</label>
+                <textarea id="prazoObs" placeholder="Notas internas…"></textarea>
+              </div>
+            </div>
+          </details>
+
+          <div class="row" style="margin-top:12px">
+            <button class="btn primary" id="btnSalvarPrazo">Salvar prazo</button>
+            <button class="btn ghost" id="btnLimparPrazo">Limpar</button>
+            <input id="prazoId" type="hidden" value="">
+            <input id="prazoCadId" type="hidden" value="">
+          </div>
+        </div>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:110px">Data</th>
+              <th style="width:210px">Restante</th>
+              <th style="width:260px">Comentário</th>
+              <th>Cliente / Processo</th>
+              <th>Nome</th>
+              <th style="width:170px">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaPrazos"><tr><td colspan="8" class="muted">Nenhum prazo encontrado.</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="hint" style="margin-top:10px">
+        Cores: <span class="mono">≤ 5</span> (vermelho) • <span class="mono">6–15</span> (amarelo) • <span class="mono">&gt; 15</span> (verde).<br>
+        Úteis contam apenas seg–sex (sem feriados).
+      </div>
+    </div>
+  </section>
+
+  <!-- PROCESSOS -->
+  <section id="processos" class="">
+    <div class="card">
+      <div class="topline">
+        <h3>Todos os processos</h3>
+        <span class="hint">Visão geral • separar ativos x baixados/arquivados</span>
+      </div>
+
+      <div class="kpis" style="margin-top:0">
+        <div class="kpi brand"><div class="lbl">Total</div><div class="val" id="kpiProcTotal">0</div></div>
+        <div class="kpi ok"><div class="lbl">Ativos</div><div class="val" id="kpiProcAtivos">0</div></div>
+        <div class="kpi warn"><div class="lbl">Baixados/Arquivados</div><div class="val" id="kpiProcArquivados">0</div></div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <div class="field" style="min-width:260px; flex:1">
+          <label>Busca (nº, cadastro, partes, assunto)</label>
+          <input id="procBusca" placeholder="ex: 500..., Thabas, execução, banco...">
+        </div>
+        <div class="field" style="max-width:240px">
+          <label>Status</label>
+          <select id="procFiltro">
+            <option value="ativos" selected="">Somente ativos</option>
+            <option value="todos">Todos</option>
+            <option value="arquivados">Somente baixados/arquivados</option>
+          </select>
+        </div>
+        <div class="field" style="max-width:280px">
+          <label>Ordenar</label>
+          <select id="procOrdem">
+            <option value="ultimoDesc">Último evento (recente)</option>
+            <option value="ultimoAsc">Último evento (antigo)</option>
+            <option value="distribDesc">Distribuição (recente)</option>
+            <option value="distribAsc">Distribuição (antiga)</option>
+            <option value="valorDesc">Valor da causa (maior)</option>
+            <option value="valorAsc">Valor da causa (menor)</option>
+            <option value="numeroAsc">Número (A→Z)</option>
+            <option value="numeroDesc">Número (Z→A)</option>
+          </select>
+        </div>
+        <div class="field" style="max-width:260px">
+          <label style="display:flex; gap:10px; align-items:center;">
+            <input type="checkbox" id="procSomenteComPrazo">
+            Somente com prazo aberto
+          </label>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="tablewrap" style="max-height:520px">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:120px">Status</th>
+              <th style="width:210px">Processo</th>
+              <th>Partes</th>
+              <th style="width:140px">Distribuição</th>
+              <th style="width:150px">Valor da causa</th>
+              <th>Último evento</th>
+              <th style="width:150px">Próximo prazo</th>
+              <th style="width:120px">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaProcessos"><tr><td colspan="8" class="muted">Nenhum processo encontrado. Importe um relatório de processos.</td></tr></tbody>
+        </table>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="card soft" style="padding:14px" id="procDetalheWrap">
+        <div class="topline">
+          <h3 style="margin:0; font-size:14px">Detalhes</h3>
+          <span class="hint" id="procDetalheHint">Selecione um processo.</span>
+        </div>
+        <div id="procDetalhe" class="muted">Nenhum processo selecionado.</div>
+      </div>
+
+      <div class="hint" style="margin-top:10px">
+        Dica estratégica: use “Somente com prazo aberto” para enxergar onde existe risco/ação imediata, e “Ativos” para acompanhar evolução do contencioso.
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- CLIENTES -->
+  <section id="clientes" class="">
+    <div class="card">
+      <div class="topline">
+        <h3>Clientes</h3>
+        <span class="hint">Painel (decisão) • Cadastros (fixos)</span>
+      </div>
+
+      <div class="subtabs" id="clienteSubtabs">
+        <button class="subtab active" data-sub="painel">Painel</button>
+        <button type="button" class="subtab" data-sub="cadastros">Cadastros</button>      </div>
+
+      <!-- Sub: Painel -->
+      <div id="clientes_painel" style="display: block;">
+        <div class="row">
+          <div class="field">
+            <label>Busca (cadastro)</label>
+            <input id="cliPainelBusca" placeholder="ex: Thabas, Martin...">
+          </div>
+          <div class="field" style="max-width:260px">
+            <label>Ordenar</label>
+            <select id="cliPainelOrdem">
+              <option value="proximo">Mais urgente</option>
+              <option value="nomeAsc">Nome (A–Z)</option>
+              <option value="nomeDesc">Nome (Z–A)</option>
+              <option value="maisPrazos">Mais prazos</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="row" style="align-items:stretch">
+          <div class="field" style="min-width:340px; flex:1.1">
+            <div class="tablewrap" style="max-height:520px">
+              <table style="min-width:unset">
+                <thead>
+                  <tr>
+                    <th>Cadastro</th>
+                    <th style="width:110px">Prazos</th>
+                    <th style="width:160px">Próximo</th>
+                    <th style="width:140px">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelaCadastrosPainel">
+        <tr>
+          <td>
+            <a href="#" class="linklike" onclick="window.__selPainel('06cdb7ec-c4f2-46ee-864e-3605db241ae7'); return false;"><strong>Martin</strong></a>
+            <div class="muted">0 prazo(s) • 0 processo(s)</div>
+          </td>
+          <td class="mono">0</td>
+          <td><span class="status ok">-</span></td>
+          <td>            <button class="btn small ghost" onclick="window.__abrirCad('06cdb7ec-c4f2-46ee-864e-3605db241ae7')">Editar</button>
+          </td>
+        </tr>
+      
+        <tr style="outline:1px solid rgba(225,29,72,.55); outline-offset:-2px; background: rgba(225,29,72,.06)">
+          <td>
+            <a href="#" class="linklike" onclick="window.__selPainel('1f79043e-c968-4cec-9fdf-c4937da482eb'); return false;"><strong>Thabas</strong></a>
+            <div class="muted">0 prazo(s) • 0 processo(s)</div>
+          </td>
+          <td class="mono">0</td>
+          <td><span class="status ok">-</span></td>
+          <td>            <button class="btn small ghost" onclick="window.__abrirCad('1f79043e-c968-4cec-9fdf-c4937da482eb')">Editar</button>
+          </td>
+        </tr>
+      </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="field" style="min-width:340px; flex:1">
+            <div class="card soft" style="padding:14px">
+              <div class="topline">
+                <h3 style="margin:0; font-size:14px">Gerenciar cadastro</h3>
+                <span class="hint" id="painelHint">Thabas</span>
+              </div>
+              <div id="painelDetalhe" class="muted">
+      <div class="muted" style="margin-bottom:10px">
+        —
+      </div>
+      
+      <div class="kpis" style="margin-top:0">
+        <div class="kpi brand"><div class="lbl">Prazos</div><div class="val">0</div></div>
+        <div class="kpi warn"><div class="lbl">Vence hoje</div><div class="val">0</div></div>
+        <div class="kpi brand"><div class="lbl">Próximo</div><div class="val">—</div></div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="row">
+        <button class="btn small primary" onclick="window.__filtrarCadastro('1f79043e-c968-4cec-9fdf-c4937da482eb')">Ver prazos deste cadastro</button>
+        <button class="btn small ghost" onclick="window.__abrirCad('1f79043e-c968-4cec-9fdf-c4937da482eb')">Editar cadastro</button>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="hint">Processos vinculados</div>
+      <div class="tablewrap" style="max-height:320px; margin-top:8px">
+        <table style="min-width:unset">
+          <thead><tr><th>Processo</th><th style="width:120px">Prazos</th><th style="width:160px">Próximo</th></tr></thead>
+          <tbody>
+            <tr><td colspan="3" class="muted">Nenhum prazo vinculado.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub: Cadastros -->
+      <div id="clientes_cadastros" style="display:none">
+        <div class="row">
+          <div class="field">
+            <label>Busca (cadastros)</label>
+            <input id="cadBusca" placeholder="ex: Thabas, Martin...">
+          </div>
+          <button class="btn primary" id="btnNovoCadastro">+ Novo cadastro</button>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="row" style="align-items:stretch">
+          <div class="field" style="min-width:340px; flex:1.1">
+            <div class="tablewrap" style="max-height:520px">
+              <table style="min-width:unset">
+                <thead>
+                  <tr>
+                    <th>Cadastro</th>
+                    <th style="width:110px">Apelidos</th>
+                    <th style="width:120px">Processos</th>
+                    <th style="width:110px">Prazos</th>
+                    <th style="width:120px">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelaCadastros">
+        <tr>
+          <td>
+            <strong>Martin</strong>
+            <div class="muted">—</div>
+          </td>
+          <td class="mono">2</td>
+          <td class="mono">0</td>
+          <td class="mono">0</td>
+          <td>
+            <button class="btn small" onclick="window.__selCad('06cdb7ec-c4f2-46ee-864e-3605db241ae7')">Abrir</button>
+            <button class="btn small ghost" onclick="window.__selPainel('06cdb7ec-c4f2-46ee-864e-3605db241ae7')">Painel</button>
+          </td>
+        </tr>
+      
+        <tr>
+          <td>
+            <strong>Thabas</strong>
+            <div class="muted">—</div>
+          </td>
+          <td class="mono">2</td>
+          <td class="mono">0</td>
+          <td class="mono">0</td>
+          <td>
+            <button class="btn small" onclick="window.__selCad('1f79043e-c968-4cec-9fdf-c4937da482eb')">Abrir</button>
+            <button class="btn small ghost" onclick="window.__selPainel('1f79043e-c968-4cec-9fdf-c4937da482eb')">Painel</button>
+          </td>
+        </tr>
+      </tbody>
+              </table>
+            </div>
+            <div class="hint" style="margin-top:10px">
+              Apelidos ajudam a vincular automaticamente (ex.: “THABAS”, “THABAS LTDA”, “TBHS”).
+            </div>
+          </div>
+
+          <div class="field" style="min-width:340px; flex:1">
+            <div class="card soft" style="padding:14px">
+              <div class="topline">
+                <h3 style="margin:0; font-size:14px">Cadastro</h3>
+                <span class="hint" id="cadHint">Selecione um cadastro.</span>
+              </div>
+
+              <input id="cadId" type="hidden">
+              <div class="row">
+                <div class="field">
+                  <label>Nome do cadastro</label>
+                  <input id="cadNome" placeholder="Ex: Thabas">
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field" style="max-width:260px">
+                  <label>CPF</label>
+                  <input id="cadCPF" placeholder="000.000.000-00">
+                </div>
+                <div class="field" style="max-width:260px">
+                  <label>Telefone</label>
+                  <input id="cadTelefone" placeholder="(00) 00000-0000">
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label>Qualificação completa</label>
+                  <textarea id="cadQualificacao" placeholder="Ex.: nacionalidade, estado civil, profissão, RG/CPF, endereço..." style="min-height:130px"></textarea>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label>Apelidos (separados por vírgula)</label>
+                  <input id="cadAliases" placeholder="Ex: THABAS LTDA, TBHS">
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="field">
+                  <label>Notas do cliente (decisão)</label>
+                  <textarea id="cadNotas" placeholder="Ex.: perfil, risco, próximos passos, estratégia..."></textarea>
+                </div>
+              </div>
+
+              <div class="row">
+                <button class="btn primary" id="btnSalvarCadastro">Salvar cadastro</button>
+                <button class="btn ghost" id="btnLimparCadastro">Limpar</button>
+                <button class="btn danger" id="btnExcluirCadastro" style="margin-left:auto; display:none">Excluir</button>
+              </div>
+
+              <div style="height:10px"></div>
+
+              <div class="hint">
+                Abaixo: visão do que está vinculado a este cadastro (processos + prazos).
+              </div>
+
+              <div style="height:10px"></div>
+
+              <div id="cadVinculos" class="muted"><div class="muted">Selecione um cadastro para ver os vínculos.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub: Config -->
+
+    </div>
+  </section>
+
+  <!-- IMPORTAR -->
+  
+
+    <section id="admin" class="active">
+    <div class="card">
+      <div class="topline">
+        <h3>Administrador</h3>
+        <span class="hint">Configurações e módulos</span>
+      </div>
+
+      <div class="subtabs" id="adminSubtabs">
+        <button type="button" class="subtab" data-sub="config">Config</button>
+        <button type="button" class="subtab" data-sub="importacao">Importação</button>
+        <button class="subtab active" data-sub="exportacao">Exportação</button>
+        <button type="button" class="subtab" data-sub="pagamentos">Pagamentos</button>
+        <button type="button" class="subtab" data-sub="equipe">Equipe</button>
+      </div>
+
+      <div id="admin_config" style="display: none;">
+        <div class="card soft">
+          <div class="topline">
+            <h3>Configurações</h3>
+            <span class="hint">Logo fica salva no navegador</span>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label>Enviar logo (PNG/JPG/SVG)</label>
+              <input id="logoInput" type="file" accept="image/*">
+            </div>
+            <button class="btn danger" id="btnRemoverLogo">Remover logo</button>
+          </div>
+
+          <div class="hint" style="margin-top:10px">
+            Se a logo não aparecer: envie novamente aqui. (O app não depende de arquivo externo.)
+          </div>
+        </div>
+      </div>
+
+      
+
+      <div id="admin_importacao" style="display: none;">
+<div class="card">
+      <div class="topline">
+        <h3>Importar .xls</h3>
+        <span class="hint">Funciona melhor online (para carregar XLSX). O app não trava se estiver offline.</span>
+      </div>
+
+      <div class="dropzone" id="dropzone">
+        <strong>Arraste e solte o arquivo .xls/.xlsx aqui</strong><br>
+        <span class="hint">ou use “Escolher arquivo” abaixo</span>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <div class="field">
+          <label>Escolher arquivo (.xls / .xlsx)</label>
+          <input id="xlsFile" type="file" accept=".xls,.xlsx">
+        </div>
+        <button class="btn primary" id="btnImportar">Importar prazos</button>
+        <button class="btn danger" id="btnApagarXLS">Apagar TODOS os XLS</button>
+        <button class="btn danger" id="btnApagarPrazos">Apagar TODOS os prazos</button>
+      </div>
+
+      <div style="margin-top:10px" class="log" id="xlsLog">Base limpa. Importe um .xls para alimentar novamente.</div>
+
+      <div style="margin-top:12px; overflow:auto; border:1px solid var(--line); border-radius:var(--radius); background: rgba(0,0,0,.18);">
+        <table style="min-width:unset">
+          <thead><tr><th>Prévia</th></tr></thead>
+          <tbody id="xlsPreview"><tr><td class="muted">Sem prévia ainda.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+      </div>
+<div id="admin_exportacao" style="display: block;">
+        <div class="card soft">
+          <div class="topline">
+            <h3>Exportação</h3>
+            <span class="hint">Gerar uma base única com tudo</span>
+          </div>
+
+          <div class="muted" style="margin-bottom:10px">
+            Use isto para recriar o app em outro computador: exporte e depois importe o backup.
+          </div>
+
+          <div class="row" style="align-items:flex-end">
+            <button class="btn primary" id="btnExportarBase">Exportar base completa (.xlsx)</button>
+            <button class="btn" id="btnExportarTXT">Exportar backup (.txt)</button>
+            <button class="btn" id="btnExportarApp">Exportar app completo (.html)</button>
+            <div class="hint" id="exportHint" style="margin-left:auto">Inclui: Cadastros • Processos • Prazos • Comentários</div>
+          </div>
+
+          <div class="row" style="align-items:flex-end; margin-top:12px">
+            <div class="field" style="min-width:260px">
+              <label>Importar backup (.txt)</label>
+              <input id="txtBackupFile" type="file" accept=".txt,application/json,text/plain">
+            </div>
+            <button class="btn" id="btnImportarTXT" disabled="">Importar backup</button>
+            <div class="hint" style="margin-left:auto">Restaura tudo (neste navegador).</div>
+          </div>
+
+          <div class="hint" style="margin-top:10px">
+            Observação: navegadores geralmente salvam como <span class="mono">.xlsx</span> (mais compatível que <span class="mono">.xls</span>).
+          </div>
+        </div>
+      </div>
+
+      <div id="admin_pagamentos" style="display:none">
+        <div class="card soft">
+          <div class="topline">
+            <h3>Pagamentos</h3>
+            <span class="hint">Em breve</span>
+          </div>
+          <div class="muted">
+            Espaço reservado para funcionalidades futuras de pagamentos, alertas e relatórios.
+          </div>
+        </div>
+      </div>
+
+      <div id="admin_equipe" style="display:none">
+        <div class="card soft">
+          <div class="topline">
+            <h3>Equipe</h3>
+            <span class="hint">Em breve</span>
+          </div>
+          <div class="muted">
+            Espaço reservado para funcionalidades futuras de equipe, permissões e auditoria.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Toast -->
+<div class="toast bad" id="toast">
+  <div class="t-title" id="toastTitle">Limpeza total</div>
+  <div class="t-msg" id="toastMsg">Prazos apagados. Cadastros e logo foram mantidos.</div>
+</div>
+
+<!-- Modal: Comentário do prazo -->
+<div class="modalOverlay" id="comentModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="comentTitle">
+    <div class="topline" style="margin-bottom:8px">
+      <div>
+        <h3 class="m-title" id="comentTitle" style="margin:0; font-size:14px">Comentário do prazo</h3>
+        <div class="m-sub" id="comentSub">Edite e clique em salvar.</div>
+      </div>
+      <button class="btn small ghost" id="btnFecharComent">Fechar</button>
+    </div>
+    <div class="row">
+      <div class="field" style="min-width:260px">
+        <label>Comentário</label>
+        <textarea id="comentText" placeholder="Escreva aqui…"></textarea>
+      </div>
+    </div>
+    <div class="m-actions">
+      <button class="btn ghost" id="btnCancelarComent">Cancelar</button>
+      <button class="btn primary" id="btnSalvarComent">Salvar comentário</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+(function(){
+  "use strict";
+
+  // ===== Compat / Diagnóstico (iPhone/Safari) =====
+  function __escHtml(s){
+    return String(s||"")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  const __hasIntlBRL = (typeof Intl !== "undefined" && Intl && typeof Intl.NumberFormat === "function");
+  const __nfBRL = __hasIntlBRL ? new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}) : null;
+
+  function formatBRL(n){
+    const v = Number(n||0);
+    if(__nfBRL){
+      try{ return __nfBRL.format(isFinite(v) ? v : 0); }catch(_){}
+    }
+    if(!isFinite(v)) return "R$ 0,00";
+    const s = v.toFixed(2);
+    const parts = s.split(".");
+    let i = parts[0];
+    const d = parts[1] || "00";
+    i = i.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return "R$ " + i + "," + d;
+  }
+
+  function safeScrollTop(){
+    try{
+      // alguns Safaris não aceitam o objeto de options
+      window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    }catch(e){
+      try{ window.scrollTo(0, 0); }catch(_){ }
+    }
+  }
+
+  function eachNode(sel, fn){
+    const list = document.querySelectorAll(sel);
+    for(let i=0; i<list.length; i++){ fn(list[i], i); }
+  }
+
+  function bindTap(el, fn){
+    if(!el) return;
+    var touched = false;
+    el.addEventListener('touchend', function(e){
+      touched = true;
+      try{ e.preventDefault(); }catch(_){}
+      fn(e);
+      setTimeout(function(){ touched = false; }, 450);
+    }, { passive: false });
+
+    el.addEventListener('click', function(e){
+      if(touched) return;
+      fn(e);
+    });
+  }
+
+  function setActive(el, on){
+    if(!el) return;
+    if(on) el.classList.add('active');
+    else el.classList.remove('active');
+  }
+
+  function showFatal(err){
+    try{
+      const msg = (err && (err.stack || err.message)) ? (err.stack || err.message) : String(err);
+      console.error(err);
+      const old = document.getElementById("__fatalOverlay");
+      if(old) old.remove();
+      const d = document.createElement("div");
+      d.id="__fatalOverlay";
+      d.style.cssText="position:fixed;inset:0;background:rgba(15,23,42,.92);color:#fff;z-index:999999;padding:16px;overflow:auto;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;";
+      d.innerHTML =
+        '<div style="max-width:920px;margin:0 auto">'+
+        '<h2 style="margin:0 0 8px;font-size:18px">⚠️ O app travou ao iniciar</h2>'+
+        '<p style="margin:0 0 12px;opacity:.9">Isso geralmente é incompatibilidade do Safari/iOS, ou o arquivo foi aberto no visualizador do iPhone (Quick Look), que não executa o app direito. Erro detectado:</p>'+
+        '<pre style="white-space:pre-wrap;background:rgba(0,0,0,.25);padding:12px;border-radius:12px">'+__escHtml(msg)+'</pre>'+
+        '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">'+
+          '<button id="__fatalCopy" style="padding:10px 12px;border-radius:10px;border:0;background:#e11d48;color:#fff;font-weight:700">Copiar erro</button>'+
+          '<button id="__fatalClose" style="padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff">Fechar</button>'+
+        '</div>'+
+        '<p style="margin:12px 0 0;opacity:.85">Se você abriu este .html pelo WhatsApp/Arquivos: use <b>Compartilhar → Abrir no Safari</b> (ou publique no GitHub Pages/Netlify). Em <code>file://</code>, o iOS pode bloquear o armazenamento local.</p>'+
+        '</div>';
+      document.body.appendChild(d);
+      document.getElementById("__fatalClose").onclick = ()=> d.remove();
+      document.getElementById("__fatalCopy").onclick = async ()=>{
+        try{ await navigator.clipboard.writeText(msg); }catch(_){}
+      };
+    }catch(_){}
+  }
+
+  window.addEventListener("error", (e)=>{
+    try{
+      if(e && e.error) showFatal(e.error);
+      else if(e && e.message) showFatal(e.message);
+    }catch(_){}
+  });
+
+  window.addEventListener("unhandledrejection", (e)=>{
+    try{ showFatal(e && e.reason ? e.reason : e); }catch(_){}
+  });
+
+
+  // ===== Util =====
+  const KEY = "fauque_gestao_v12_clean";
+
+  // Se este HTML vier com dados embutidos, restaura no navegador (com confirmação se já houver dados).
+  try{
+    const emb = window.__FAUQUE_EMBEDDED_STATE__;
+    if(emb && typeof emb === 'object'){
+      const existing = localStorage.getItem(KEY);
+      if(!existing){
+        localStorage.setItem(KEY, JSON.stringify(emb));
+      }else{
+        if(confirm('Este arquivo contém dados embutidos. Deseja carregar esses dados e substituir os dados atuais deste navegador?')){
+          localStorage.setItem(KEY, JSON.stringify(emb));
+        }
+      }
+    }
+  }catch(e){ /* ignore */ }
+
+
+  const $ = (id)=>document.getElementById(id);
+  const val = (id)=>{ const el = $(id); return el ? el.value : ""; };
+  const chk = (id)=>{ const el = $(id); return !!(el && el.checked); };
+  const safeFocus = (id)=>{ const el = $(id); try{ if(el && el.focus) el.focus(); }catch(_){ } };
+  const cadNome = (id)=>{ try{ const c = getCadastroById(id); return c ? c.nome : ""; }catch(_){ return ""; } };
+  const on = (id, ev, fn)=>{ const el = $(id); if(el) el.addEventListener(ev, fn); };
+  const onEl = (el, ev, fn)=>{ if(el) el.addEventListener(ev, fn); };
+  const clamp = (n,min,max)=>Math.max(min,Math.min(max,n));
+
+  let toastTimer=null;
+  function toast(type, title, msg){
+    const t = $("toast");
+    $("toastTitle").textContent = title || "Aviso";
+    $("toastMsg").textContent = msg || "";
+    t.className = "toast show " + (type || "brand");
+    clearTimeout(toastTimer);
+    toastTimer=setTimeout(()=>t.classList.remove("show"), 2800);
+  }
+
+  function baixarBlob(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=> URL.revokeObjectURL(url), 5000);
+  }
+
+
+  function hojeISO(){
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  function formatData(iso){
+    if(!iso) return "-";
+    const [y,m,d] = iso.split("-");
+    return `${d}/${m}/${y}`;
+  }
+  function formatDateTime(ts){
+    if(!ts) return "—";
+    const d = new Date(ts);
+    const pad = (n)=>String(n).padStart(2,"0");
+    return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  function diffDias(isoA, isoB){
+    const a = new Date(isoA+"T00:00:00");
+    const b = new Date(isoB+"T00:00:00");
+    return Math.round((a-b)/(1000*60*60*24));
+  }
+  function isBusinessDay(d){
+    const day=d.getDay();
+    return day!==0 && day!==6;
+  }
+  function businessDaysRemaining(finalIso){
+    const today = new Date(hojeISO()+"T00:00:00");
+    const finalD = new Date(finalIso+"T00:00:00");
+    if(finalD.getTime() === today.getTime()) return 0;
+
+    const direction = finalD > today ? 1 : -1;
+    let count=0;
+
+    if(direction===1){
+      const cur=new Date(today);
+      cur.setDate(cur.getDate()+1);
+      while(cur<=finalD){
+        if(isBusinessDay(cur)) count++;
+        cur.setDate(cur.getDate()+1);
+      }
+      return count;
+    }else{
+      const cur=new Date(finalD);
+      cur.setDate(cur.getDate()+1);
+      const end=new Date(today);
+      end.setDate(end.getDate()-1);
+      while(cur<=end){
+        if(isBusinessDay(cur)) count++;
+        cur.setDate(cur.getDate()+1);
+      }
+      return -count;
+    }
+  }
+
+  function countdown(finalIso){
+    const corridos = diffDias(finalIso, hojeISO());
+    const uteis = businessDaysRemaining(finalIso);
+
+    let cls="ok";
+    if(corridos<0) cls="bad";
+    else if(corridos<=5) cls="bad";
+    else if(corridos<=15) cls="warn";
+
+    let label="";
+    if(corridos<0){
+      label = `Vencido há ${Math.abs(corridos)}d • úteis: ${Math.abs(uteis)}d`;
+    }else{
+      label = `úteis: ${uteis}d • corridos: ${corridos}d`;
+    }
+    return {corridos, uteis, cls, label};
+  }
+
+  function uuid(){
+    try{
+      if(window.crypto && typeof crypto.randomUUID==="function") return crypto.randomUUID();
+    }catch(_){/*ignore*/}
+    return ("id_"+Math.random().toString(16).slice(2)+Date.now());
+  }
+
+  function norm(s){
+    let out = String(s||"").toLowerCase();
+    // Safari/iOS antigos podem não suportar String.prototype.normalize
+    if(typeof out.normalize === "function"){
+      out = out.normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    }
+    out = out.replace(/\s+/g," ").trim();
+    return out;
+  }
+
+  // Extrai o número CNJ do processo (padroniza e evita duplicidades entre relatórios)
+  function procKey(v){
+    const s = String(v||"").trim();
+    if(!s) return "";
+    const m = s.match(/\b\d{7}-\d{2}\.\d{4}\.\d\.\d{2}\.\d{4}\b/);
+    if(m) return m[0];
+    return s.replace(/\s*\([^)]*\)\s*$/,"").trim();
+  }
+
+  function escapeHtml(str){
+    str = String(str || "");
+    str = str.split("&").join("&amp;");
+    str = str.split("<").join("&lt;");
+    str = str.split(">").join("&gt;");
+    str = str.split('"').join("&quot;");
+    str = str.split("'").join("&#039;");
+    return str;
+  }
+  function escJs(str){
+    str = String(str || "");
+    // Escape for embedding inside JS strings / script tags (Safari-safe)
+    str = str.split("\\").join("\\\\"); // \ -> \\
+    str = str.split("'").join("\\'");
+    str = str.split("\\r").join(" ");
+    str = str.split("\\n").join(" ");
+    // Avoid HTML/script injection issues when embedding JSON
+    str = str.split("<").join("\\u003c");
+    return str.trim();
+  }
+
+  // ===== State =====
+  // prazos: {id, cadastroId?, cliente, processo, desc, data, obs}
+  // cadastros: {id, nome, aliases[], notas}
+  let state = { prazos: [], cadastros: [], processos: [], logoDataUrl: null, lastFeedAt: null };
+
+  function load(){
+    try{
+      // iOS/Safari pode bloquear localStorage em file://; por isso usamos fallback para dados embutidos.
+      let raw = null;
+      try{ raw = localStorage.getItem(KEY); }catch(_){ raw = null; }
+
+      let obj = null;
+      if(raw){
+        try{ obj = JSON.parse(raw); }catch(_){ obj = null; }
+      }
+
+      // fallback: dados embutidos no HTML (exportar app completo)
+      if(!obj || typeof obj!=="object"){
+        const emb = window.__FAUQUE_EMBEDDED_STATE__;
+        if(emb && typeof emb==="object"){
+          obj = emb;
+          // tenta persistir no navegador (se permitido)
+          try{
+            if(!raw) localStorage.setItem(KEY, JSON.stringify(emb));
+          }catch(_){}
+        }else{
+          return;
+        }
+      }
+
+      state.prazos = Array.isArray(obj.prazos) ? obj.prazos : [];
+      state.cadastros = Array.isArray(obj.cadastros) ? obj.cadastros : [];
+      state.processos = Array.isArray(obj.processos) ? obj.processos : [];
+      state.logoDataUrl = obj.logoDataUrl || null;
+      state.lastFeedAt = obj.lastFeedAt || null;
+    }catch(e){
+      console.error(e);
+    }
+  }
+
+  function normalizeState(){
+    // cadastros
+    state.cadastros = (state.cadastros||[]).map(c=>({
+      id: c.id || uuid(),
+      nome: c.nome || "",
+      aliases: Array.isArray(c.aliases) ? c.aliases : [],
+      cpf: c.cpf || "",
+      telefone: c.telefone || "",
+      qualificacao: c.qualificacao || "",
+      notas: c.notas || ""
+    })).filter(c=>c.nome.trim());
+
+    // prazos
+    state.prazos = (state.prazos||[]).map(p=>({
+      id: p.id || uuid(),
+      cadastroId: p.cadastroId || null,
+      cliente: p.cliente || "",
+      processo: p.processo || "",
+      desc: p.desc || "",
+      data: p.data || "",
+      obs: p.obs || "",
+      comentario: p.comentario || "",
+      archived: !!p.archived
+    })).filter(p=>p.desc && p.data);
+
+    // processos
+    const toNumBRL = (v)=>{
+      if(v==null || v==="") return 0;
+      if(typeof v === "number" && isFinite(v)) return v;
+      let s = String(v);
+      s = s.replace(/\u00A0/g," ").trim(); // NBSP -> espaço
+      s = s.replace(/[^0-9,\.\-]/g,""); // remove "R$", etc.
+      if(!s) return 0;
+      if(s.indexOf(",")>=0){
+        // pt-BR: remove milhares "." e troca decimal "," por "."
+        s = s.replace(/\./g,"").replace(/,/g,".");
+      }
+      const n = Number(s);
+      return isFinite(n) ? n : 0;
+    };
+
+    state.processos = (state.processos||[]).map(x=>{
+      const key = x.procKey || procKey(x.numero || x.processo || x.__numero || "");
+      const statusTxt = x.status || x.ultimoEvento || "";
+      const sg = String(x.statusGroup || "").toLowerCase();
+      const baixado = (typeof x.baixado === "boolean") ? x.baixado : (sg==="baixado" || sg==="arquivado");
+      return {
+        id: x.id || uuid(),
+        cadastroId: x.cadastroId || null,
+        numero: x.numero || x.processo || "",
+        procKey: key,
+        partes: x.partes || x.cliente || "",
+        autores: x.autores || "",
+        reus: x.reus || "",
+        classe: x.classe || "",
+        assunto: x.assunto || "",
+        orgao: x.orgao || x["órgão"] || "",
+        ultimoEvento: x.ultimoEvento || "",
+        lastEventTs: (x.lastEventTs!=null && x.lastEventTs!=="") ? Number(x.lastEventTs) : 0,
+        distribuicao: x.distribuicao || "",
+        valorCausa: toNumBRL(x.valorCausa),
+        status: statusTxt,
+        statusGroup: x.statusGroup || (baixado ? "baixado" : "ativo"),
+        dataBaixa: x.dataBaixa || "",
+        baixado: !!baixado,
+        origem: x.origem || ""
+      };
+    }).filter(x=>String(x.numero || x.procKey || "").trim());
+
+  }
+
+
+  function save(opts){
+    opts = opts || {};
+    state.lastFeedAt = Date.now();
+    try{
+      localStorage.setItem(KEY, JSON.stringify(state));
+    }catch(e){
+      console.error(e);
+      toast("bad","Armazenamento cheio","O navegador ficou sem espaço para salvar. Sugestão: clique em 'Apagar TODOS os prazos' ou limpe dados do site e reimporte.");
+      // não dá renderAll aqui porque pode quebrar tudo
+      return false;
+    }
+    if(!opts.noRender) renderAll();
+    return true;
+  }
+
+  // Seed inicial (Thabas, Martin) se não existir nada ainda
+  function seedCadastros(){
+    if(state.cadastros && state.cadastros.length) return;
+    state.cadastros = [
+      { id: uuid(), nome:"Thabas", aliases:["THABAS LTDA","THABAS"], cpf:"", telefone:"", qualificacao:"", notas:"" },
+      { id: uuid(), nome:"Martin", aliases:["MARTIN","MARTIN LTDA"], cpf:"", telefone:"", qualificacao:"", notas:"" }
+    ];
+    save();
+  }
+
+  // ===== Logo =====
+  function renderLogo(){
+    const img = $("logoImg");
+    const fb = $("logoFallback");
+    if(state.logoDataUrl){
+      img.src = state.logoDataUrl;
+      img.style.display="block";
+      fb.style.display="none";
+    }else{
+      img.removeAttribute("src");
+      img.style.display="none";
+      fb.style.display="grid";
+    }
+  }
+
+  async function fileToDataUrl(file){
+    return new Promise((resolve,reject)=>{
+      const r = new FileReader();
+      r.onload = ()=>resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+
+  // Converte pretos (e quase pretos) em transparência para a logo
+  async function makeBlackTransparent(file){
+    const dataUrl = await fileToDataUrl(file);
+    return new Promise((resolve, reject)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        try{
+          const maxSide = 512;
+          const scale = Math.min(1, maxSide / Math.max(img.width||1, img.height||1));
+          const w = Math.max(1, Math.round((img.width||1) * scale));
+          const h = Math.max(1, Math.round((img.height||1) * scale));
+          const canvas = document.createElement("canvas");
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.clearRect(0,0,w,h);
+          ctx.drawImage(img, 0, 0, w, h);
+          const imgData = ctx.getImageData(0,0,w,h);
+          const d = imgData.data;
+
+          // threshold (quanto maior, mais agressivo em remover tons escuros)
+          const TH = 42;
+
+          for(let i=0;i<d.length;i+=4){
+            const r = d[i], g = d[i+1], b = d[i+2], a = d[i+3];
+            if(a===0) continue;
+            if(r<=TH && g<=TH && b<=TH){
+              d[i+3] = 0;
+            }
+          }
+          ctx.putImageData(imgData, 0, 0);
+          resolve(canvas.toDataURL("image/png"));
+        }catch(err){ reject(err); }
+      };
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
+  }
+
+
+  // ===== Vinculação: prazo -> cadastro =====
+  function getCadastroById(id){
+    return state.cadastros.find(c=>c.id===id) || null;
+  }
+
+  function findCadastroForPrazo(p){
+    // 1) se prazo tem vínculo direto
+    if(p.cadastroId){
+      const c = getCadastroById(p.cadastroId);
+      if(c) return c;
+    }
+    // 2) senão, tenta por texto (cliente/partes) usando nome/aliases
+    const blob = norm((p.cliente||"") + " " + (p.processo||"") + " " + (p.desc||"") + " " + (p.obs||""));
+    if(!blob) return null;
+
+    for(const c of state.cadastros){
+      const needles = [c.nome, ...(c.aliases||[])].map(norm).filter(Boolean);
+      for(const n of needles){
+        if(n && blob.includes(n)) return c;
+      }
+    }
+    return null;
+  }
+
+  function findCadastroForProcess(x){
+    if(x.cadastroId){
+      const c = getCadastroById(x.cadastroId);
+      if(c) return c;
+    }
+    const blob = norm((x.partes||"") + " " + (x.numero||"") + " " + (x.classe||"") + " " + (x.assunto||"") + " " + (x.orgao||"") + " " + (x.status||""));
+    if(!blob) return null;
+
+    for(const c of state.cadastros){
+      const needles = [c.nome, ...(c.aliases||[])].map(norm).filter(Boolean);
+      for(const n of needles){
+        if(n && blob.includes(n)) return c;
+      }
+    }
+    return null;
+  }
+
+
+
+  function detectCadastroForText(cliente, processo, desc, obs){
+    const blob = norm((cliente||"") + " " + (processo||"") + " " + (desc||"") + " " + (obs||""));
+    if(!blob) return null;
+    for(const c of state.cadastros){
+      const needles = [c.nome, ...(c.aliases||[])]
+        .map(norm)
+        .filter(Boolean);
+      for(const n of needles){
+        if(n && blob.includes(n)) return c;
+      }
+    }
+    return null;
+  }
+
+  function cadKPIs(cad){
+    // prazos vinculados (direto ou por match textual)
+    const prazos = state.prazos.filter(p=>{
+      if(p.cadastroId === cad.id) return true;
+      const c = findCadastroForPrazo(p);
+      return c && c.id===cad.id;
+    });
+
+    // processos (direto ou por match textual)
+    const procArr = (state.processos||[]).filter(x=>{
+      if(x.cadastroId === cad.id) return true;
+      const c = findCadastroForProcess(x);
+      return c && c.id===cad.id;
+    });
+
+    const h = hojeISO();
+    let venceHoje=0;
+    let proximo=null;
+
+    const processos = new Set();
+    for(const x of procArr){
+      if(x.numero) processos.add(x.numero);
+    }
+
+    for(const p of prazos){
+      const d=diffDias(p.data,h);
+      if(d===0) venceHoje++;
+      if(d>=0 && (!proximo || p.data < proximo)) proximo = p.data;
+      if(p.processo) processos.add(p.processo);
+    }
+
+    return {
+      prazos,
+      total: prazos.length,
+      venceHoje,
+      proximo,
+      processos: processos.size
+    };
+  }
+
+  // ===== UI: Tabs =====
+  function setActiveTab(target){
+    eachNode("nav .tab", (b)=>{
+      setActive(b, b.dataset.target===target);
+    });
+    eachNode("main > section", (s)=>{
+      setActive(s, s.id===target);
+    });
+    safeScrollTop();
+  }
+
+  function setClientesSub(sub){
+    eachNode("#clienteSubtabs .subtab", (b)=>{
+      setActive(b, b.dataset.sub===sub);
+    });
+    $("clientes_painel").style.display = (sub==="painel") ? "block" : "none";
+    $("clientes_cadastros").style.display = (sub==="cadastros") ? "block" : "none";
+  }
+
+  function setAdminSub(sub){
+    eachNode("#adminSubtabs .subtab", (b)=>{
+      setActive(b, b.dataset.sub===sub);
+    });
+    $("admin_config").style.display = (sub==="config") ? "block" : "none";
+    $("admin_importacao").style.display = (sub==="importacao") ? "block" : "none";
+    $("admin_exportacao").style.display = (sub==="exportacao") ? "block" : "none";
+    $("admin_pagamentos").style.display = (sub==="pagamentos") ? "block" : "none";
+    $("admin_equipe").style.display = (sub==="equipe") ? "block" : "none";
+  }
+
+
+  // ===== Prazos: CRUD =====
+  function clearPrazoForm(){
+    $("prazoId").value="";
+    $("prazoCadId").value="";
+    $("prazoCliente").value="";
+    $("prazoProcesso").value="";
+    $("prazoDesc").value="";
+    $("prazoData").value="";
+    $("prazoObs").value="";
+  }
+
+  function showPrazoForm(open){
+    const wrap = $("prazoFormWrap");
+    const btnAdd = $("btnNovoPrazo");
+    const btnClose = $("btnFecharPrazo");
+    if(open){
+      wrap.classList.remove("formHidden");
+      btnAdd.style.display = "none";
+      btnClose.style.display = "inline-flex";
+    }else{
+      wrap.classList.add("formHidden");
+      btnAdd.style.display = "inline-flex";
+      btnClose.style.display = "none";
+      clearPrazoForm();
+    }
+  }
+
+  function editComentario(id){
+    const p = state.prazos.find(x=>x.id===id);
+    if(!p) return;
+    const cur = p.comentario || "";
+    const val = prompt("Comentário do prazo:", cur);
+    if(val===null) return;
+    p.comentario = val.trim();
+    save();
+    toast("ok","Comentário salvo","Atualizado.");
+  }
+
+  function savePrazo(){
+    const id = $("prazoId").value || uuid();
+    const prevCadId = $("prazoCadId").value || null;
+    let cadastroId = prevCadId;
+
+    const cliente = $("prazoCliente").value.trim();
+    const processo = $("prazoProcesso").value.trim();
+    const desc = $("prazoDesc").value.trim(); // nome do prazo
+    const data = $("prazoData").value;
+    const obs = $("prazoObs").value.trim();
+
+    if(!desc || !data){
+      toast("warn","Faltou algo","Preencha ao menos Nome do prazo e Data final.");
+      return;
+    }
+
+    const detected = detectCadastroForText(cliente, processo, desc, obs);
+    if(detected) cadastroId = detected.id;
+
+    const existing = state.prazos.find(p=>p.id===id);
+    const comentario = existing ? (existing.comentario||"") : "";
+    const archived = existing ? !!existing.archived : false;
+
+    const item = { id, cadastroId, cliente, processo, desc, data, obs, comentario, archived };
+    const idx = state.prazos.findIndex(p=>p.id===id);
+    if(idx>=0) state.prazos[idx]=item; else state.prazos.push(item);
+
+    save();
+    toast("ok","Prazo salvo","Registro atualizado.");
+    showPrazoForm(false);
+  }
+
+  function editPrazo(id){
+    const p = state.prazos.find(x=>x.id===id);
+    if(!p) return;
+    $("prazoId").value = p.id;
+    $("prazoCadId").value = p.cadastroId || "";
+    $("prazoCliente").value = p.cliente || "";
+    $("prazoProcesso").value = p.processo || "";
+    $("prazoDesc").value = p.desc || "";
+    $("prazoData").value = p.data || "";
+    $("prazoObs").value = p.obs || "";
+    showPrazoForm(true);
+    setActiveTab("prazos");
+    toast("brand","Editando","Altere e clique em Salvar.");
+  }
+
+  function deletePrazo(id){
+    if(!confirm("Excluir este prazo?")) return;
+    state.prazos = state.prazos.filter(p=>p.id!==id);
+    save();
+    toast("bad","Excluído","Prazo removido.");
+  }
+
+  // ===== Comentários rápidos em Prazos =====
+  let _comentPrazoId = "";
+
+  function openComentario(prazoId){
+    const p = state.prazos.find(x=>x.id===prazoId);
+    if(!p){ toast("warn","Prazo não encontrado",""); return; }
+    _comentPrazoId = prazoId;
+    $("comentText").value = (p.comentario || "");
+    const d = p.desc || "Prazo";
+    const dt = p.data ? formatData(p.data) : "";
+    $("comentSub").textContent = [d, dt].filter(Boolean).join(" • ");
+    showComentModal(true);
+    setTimeout(()=> safeFocus("comentText"), 0);
+  }
+
+  function showComentModal(show){
+    const m = $("comentModal");
+    if(!m) return;
+    m.classList.toggle("show", !!show);
+    m.setAttribute("aria-hidden", show ? "false" : "true");
+  }
+
+  function closeComentario(){
+    _comentPrazoId = "";
+    showComentModal(false);
+  }
+
+  function salvarComentario(){
+    if(!_comentPrazoId) return closeComentario();
+    const p = state.prazos.find(x=>x.id===_comentPrazoId);
+    if(!p) return closeComentario();
+    p.comentario = ($("comentText").value || "").trim();
+    save();
+    renderPrazos();
+    toast("ok","Comentário salvo","Atualizado no prazo.");
+    closeComentario();
+  }
+
+
+  function wipePrazos(){
+    if(!confirm("Tem certeza? Isso apaga TODOS os prazos (mantém Cadastros e Logo).")) return;
+    state.prazos = [];
+    save();
+    toast("bad","Limpeza total","Prazos apagados. Cadastros e logo foram mantidos.");
+  }
+
+  function wipeXLS(){
+    if(!confirm("Tem certeza? Isso apaga TODOS os dados importados via XLS (Processos + Prazos). Cadastros e Logo serão mantidos.")) return;
+    state.prazos = [];
+    state.processos = [];
+    // reseta prévia/log (sem depender do usuário abrir a aba)
+    try{
+      if($("xlsPreview")) $("xlsPreview").innerHTML = '<tr><td class="muted">Sem prévia ainda.</td></tr>';
+      if($("xlsLog")) $("xlsLog").textContent = "Base limpa. Importe um .xls para alimentar novamente.";
+    }catch(_){}
+    save();
+    toast("bad","Base limpa","Processos e prazos importados foram apagados.");
+  }
+
+
+  // ===== Cadastros: CRUD =====
+  let selectedPainelCadId = "";
+  let selectedCadId = "";
+
+  function clearCadastroForm(){
+    selectedCadId = "";
+    $("cadId").value="";
+    $("cadNome").value="";
+    $("cadAliases").value="";
+    if($("cadCPF")) $("cadCPF").value="";
+    if($("cadTelefone")) $("cadTelefone").value="";
+    if($("cadQualificacao")) $("cadQualificacao").value="";
+    $("cadNotas").value="";
+    $("cadHint").textContent="Selecione um cadastro.";
+    $("btnExcluirCadastro").style.display="none";
+    $("cadVinculos").innerHTML = `<div class="muted">Selecione um cadastro para ver os vínculos.</div>`;
+  }
+
+  function newCadastro(){
+    clearCadastroForm();
+    $("cadHint").textContent="Novo cadastro";
+    $("cadNome").focus();
+  }
+
+  function saveCadastro(){
+    const id = $("cadId").value || uuid();
+    const nome = $("cadNome").value.trim();
+    if(!nome){
+      toast("warn","Nome obrigatório","Informe o nome do cadastro.");
+      return;
+    }
+    const aliases = $("cadAliases").value
+      .split(",")
+      .map(s=>s.trim())
+      .filter(Boolean);
+
+    const cpf = (val("cadCPF") || "").trim();
+    const telefone = (val("cadTelefone") || "").trim();
+    const qualificacao = (val("cadQualificacao") || "").trim();
+    const notas = $("cadNotas").value.trim();
+
+    const item = { id, nome, aliases, cpf, telefone, qualificacao, notas };
+    const idx = state.cadastros.findIndex(c=>c.id===id);
+    if(idx>=0) state.cadastros[idx]=item; else state.cadastros.push(item);
+
+    selectedCadId = id;
+    $("cadId").value = id;
+
+    save();
+    toast("ok","Cadastro salvo","Cliente cadastrado/atualizado.");
+  }
+
+  function selectCadastro(id){
+    const c = state.cadastros.find(x=>x.id===id);
+    if(!c) return;
+    selectedCadId = id;
+    $("cadId").value = c.id;
+    $("cadNome").value = c.nome || "";
+    $("cadAliases").value = (c.aliases||[]).join(", ");
+    if($("cadCPF")) $("cadCPF").value = c.cpf || "";
+    if($("cadTelefone")) $("cadTelefone").value = c.telefone || "";
+    if($("cadQualificacao")) $("cadQualificacao").value = c.qualificacao || "";
+    $("cadNotas").value = c.notas || "";
+    $("cadHint").textContent = c.nome;
+    $("btnExcluirCadastro").style.display="inline-block";
+    renderCadastroVinculos();
+  }
+
+  function deleteCadastro(){
+    const id = $("cadId").value;
+    if(!id) return;
+    const c = state.cadastros.find(x=>x.id===id);
+    if(!c) return;
+    if(!confirm(`Excluir o cadastro "${c.nome}"? (Os prazos continuam existindo, só perdem o vínculo direto.)`)) return;
+
+    // remove vínculo direto em prazos
+    state.prazos = state.prazos.map(p=>{
+      if(p.cadastroId===id) return {...p, cadastroId:null};
+      return p;
+    });
+    state.cadastros = state.cadastros.filter(x=>x.id!==id);
+    clearCadastroForm();
+    save();
+    toast("bad","Cadastro excluído","Cadastro removido.");
+  }
+
+  // ===== Render: Dashboard =====
+  function renderDashboard(){
+    $("kpiPrazos").textContent = state.prazos.length;
+    $("kpiCadastros").textContent = state.cadastros.length;
+
+    const h = hojeISO();
+    let hoje = 0;
+    for(const p of state.prazos){
+      if(diffDias(p.data,h)===0) hoje++;
+    }
+    $("kpiHoje").textContent = hoje;
+
+    // próximos 7 dias
+    const itens = [];
+    for(const p of state.prazos){
+      const d = diffDias(p.data, h);
+      if(d>=0 && d<=7){
+        const cd = countdown(p.data);
+        const cad = findCadastroForPrazo(p);
+        itens.push({
+          data:p.data,
+          restante: cd,
+          titulo:p.desc,
+          meta: (cad ? cad.nome + " • " : "") + (p.processo ? p.processo + " • " : "") + (p.cliente || "")
+        });
+      }
+    }
+    itens.sort((a,b)=>a.data.localeCompare(b.data));
+
+    if(!itens.length){
+      $("listaProximos").innerHTML = `<div class="muted">Nenhum item nos próximos 7 dias.</div>`;
+    }else{
+      $("listaProximos").innerHTML = `
+        <div class="tablewrap" style="max-height:360px">
+          <table style="min-width:unset">
+            <thead><tr><th style="width:110px">Data</th><th style="width:210px">Restante</th><th>Item</th></tr></thead>
+            <tbody>
+              ${itens.map(i=>`
+                <tr>
+                  <td class="mono">${formatData(i.data)}</td>
+                  <td><span class="status mono ${i.restante.cls}">${escapeHtml(i.restante.label)}</span></td>
+                  <td><strong>${escapeHtml(i.titulo)}</strong><div class="muted">${escapeHtml(i.meta)}</div></td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+  }
+
+  // ===== Render: Prazos =====
+
+  function renderPrazos(){
+    const q = norm($("prazoBusca").value);
+    const ordem = $("prazoOrdem").value;
+
+    let items = state.prazos.slice();
+
+    const showArchived = $("prazoMostrarArquivados") ? $("prazoMostrarArquivados").checked : false;
+    if(!showArchived) items = items.filter(p=>!p.archived);
+
+    if(q){
+      items = items.filter(p=>{
+        const cad = findCadastroForPrazo(p);
+        const blob = norm(
+          (cad?cad.nome+" ":"") +
+          (p.cliente||"") + " " +
+          (p.processo||"") + " " +
+          (p.desc||"") + " " +
+          (p.comentario||"") + " " +
+          (p.obs||"")
+        );
+        return blob.includes(q);
+      });
+    }
+
+    // ordenação
+    if(ordem==="dataAsc") items.sort((a,b)=>a.data.localeCompare(b.data));
+    if(ordem==="dataDesc") items.sort((a,b)=>b.data.localeCompare(a.data));
+    if(ordem==="restanteAsc") items.sort((a,b)=>countdown(a.data).corridos - countdown(b.data).corridos || a.data.localeCompare(b.data));
+    if(ordem==="restanteDesc") items.sort((a,b)=>countdown(b.data).corridos - countdown(a.data).corridos || a.data.localeCompare(b.data));
+
+    $("tabelaPrazos").innerHTML = items.map(p=>{
+      const cd = countdown(p.data);
+      const meta = `${p.cliente||""}${p.processo ? " • "+p.processo : ""}`.trim();
+      const comm = (p.comentario||"").trim();
+      return `
+        <tr>
+          <td class="mono">${formatData(p.data)}</td>
+          <td><span class="status mono ${cd.cls}">${escapeHtml(cd.label)}</span></td>
+          <td>
+            <div class="inlineEdit" onclick="window.__editComentario('${p.id}')">
+              ${comm ? escapeHtml(comm) : `<span class="muted">Clique para comentar…</span>`}
+            </div>
+          </td>
+          <td>${escapeHtml(meta || "-")}</td>
+          <td>
+            <strong>${escapeHtml(p.desc || "-")}</strong>
+            ${p.obs ? `<div class="muted">${escapeHtml(p.obs)}</div>` : ""}
+          </td>
+          <td>
+            <button class="btn small" onclick="window.__editPrazo('${p.id}')">Editar</button>
+            <button class="btn small danger" onclick="window.__delPrazo('${p.id}')">Excluir</button>
+          </td>
+        </tr>
+      `;
+    }).join("") || `<tr><td colspan="8" class="muted">Nenhum prazo encontrado.</td></tr>`;
+
+    $("statusbar").innerHTML = `<span class="dot"></span>Última alteração: ${escapeHtml(formatDateTime(state.lastFeedAt))}`;
+    const bp = $("badgePrazos");
+    if(bp) bp.textContent = String(state.prazos.length);
+  }
+
+  // ===== Processos: visão geral =====
+  let selectedProcId = "";
+
+  function procStatus(proc){
+    const g = (proc.statusGroup || (proc.baixado ? "arquivado" : "ativo") || "ativo").toLowerCase();
+    if(g==="ativo") return {label:"Ativo", cls:"ok"};
+    if(g==="baixado") return {label:"Baixado", cls:"warn"};
+    return {label:"Arquivado", cls:"warn"};
+  }
+
+  function procOpenPrazos(numero){
+    const k = procKey(numero);
+    if(!k) return [];
+    return state.prazos.filter(p=> (p.procKey ? p.procKey : procKey(p.processo||""))===k && !p.archived);
+  }
+
+  function procAllPrazos(numero){
+    const k = procKey(numero);
+    if(!k) return [];
+    return state.prazos.filter(p=> (p.procKey ? p.procKey : procKey(p.processo||""))===k);
+  }
+
+  function procNextPrazo(numero){
+    const arr = procOpenPrazos(numero);
+    let next=null;
+    for(const p of arr){
+      if(!next || p.data < next) next = p.data;
+    }
+    return next;
+  }
+
+  function getProcById(id){
+    return state.processos.find(p=>p.id===id) || null;
+  }
+
+  function renderProcessos(){
+    if(!$("tabelaProcessos")) return;
+
+    const q = norm(val("procBusca") || "");
+    const filtro = val("procFiltro") || "todos";
+    const ordem = val("procOrdem") || "ultimoDesc";
+    const onlyPrazo = !!chk("procSomenteComPrazo");
+
+    const total = state.processos.length;
+    const ativos = state.processos.filter(p=>procStatus(p).label==="Ativo").length;
+    const arquivados = total - ativos;
+
+    $("kpiProcTotal").textContent = total;
+    $("kpiProcAtivos").textContent = ativos;
+    $("kpiProcArquivados").textContent = arquivados;
+
+    const bpr = $("badgeProcessos");
+    if(bpr) bpr.textContent = String(total);
+
+    let arr = state.processos.slice().map(p=>{
+      const numero = p.procKey || procKey(p.numero||p.__numero||"");
+      const cad = getCadastroById(p.cadastroId);
+      const cadNome = cad ? cad.nome : "";
+      const open = procOpenPrazos(numero);
+      const next = procNextPrazo(numero);
+      return {
+        ...p,
+        __numero: numero,
+        __cadNome: cadNome,
+        __openCount: open.length,
+        __nextPrazo: next
+      };
+    });
+
+    // filtro por status
+    if(filtro==="ativos"){
+      arr = arr.filter(p=>procStatus(p).label==="Ativo");
+    }else if(filtro==="arquivados"){
+      arr = arr.filter(p=>procStatus(p).label!=="Ativo");
+    }
+
+    // filtro por prazo aberto
+    if(onlyPrazo){
+      arr = arr.filter(p=>p.__openCount>0);
+    }
+
+    // busca
+    if(q){
+      arr = arr.filter(p=>{
+        const blob = [
+          p.__numero,
+          p.__cadNome,
+          p.partes,
+          p.autores,
+          p.reus,
+          p.classe,
+          p.assunto,
+          p.orgao,
+          p.ultimoEvento,
+          p.status
+        ].filter(Boolean).join(" ");
+        return norm(blob).includes(q);
+      });
+    }
+
+    // ordenação
+    const getUlt = (p)=> Number(p.lastEventTs || 0);
+    const getDistrib = (p)=> (p.distribuicao ? new Date(p.distribuicao+"T00:00:00").getTime() : 0);
+    const getValor = (p)=> Number(p.valorCausa || 0);
+
+    arr.sort((a,b)=>{
+      if(ordem==="ultimoDesc") return getUlt(b)-getUlt(a);
+      if(ordem==="ultimoAsc") return getUlt(a)-getUlt(b);
+      if(ordem==="distribDesc") return getDistrib(b)-getDistrib(a);
+      if(ordem==="distribAsc") return getDistrib(a)-getDistrib(b);
+      if(ordem==="valorDesc") return getValor(b)-getValor(a);
+      if(ordem==="valorAsc") return getValor(a)-getValor(b);
+      if(ordem==="numeroDesc") return String(b.__numero||"").localeCompare(String(a.__numero||""));
+      return String(a.__numero||"").localeCompare(String(b.__numero||""));
+    });
+
+    $("tabelaProcessos").innerHTML = arr.map(p=>{
+      const st = procStatus(p);
+      const next = p.__nextPrazo ? formatData(p.__nextPrazo) : "—";
+      const lastTxt = p.lastEventTs ? formatDateTime(p.lastEventTs) : "—";
+      const ca = (p.classe || "—");
+      const as = (p.assunto || "");
+      const main = as ? `${ca} • ${as}` : ca;
+      const partesTxt = String(
+        (p.autores && p.reus) ? (p.autores + " x " + p.reus) : (p.partes || p.autores || p.reus || "—")
+      ).replace(/\s+/g," ").trim();
+      const partesShort = partesTxt.length > 140 ? (partesTxt.slice(0,140) + "…") : partesTxt;
+      const activeRow = (selectedProcId===p.id) ? `style="outline:1px solid rgba(225,29,72,.55); outline-offset:-2px; background: rgba(225,29,72,.06)"` : "";
+      return `
+        <tr ${activeRow}>
+          <td><span class="status ${st.cls}">${escapeHtml(st.label)}</span></td>
+          <td class="mono">${escapeHtml(p.__numero || "—")}</td>
+          <td>${escapeHtml(partesShort || "—")}</td>
+          <td>${escapeHtml(p.distribuicao ? formatData(p.distribuicao) : "—")}</td>
+          <td>${escapeHtml(p.valorCausa ? formatBRL(p.valorCausa) : "—")}</td>
+          <td>${escapeHtml(p.ultimoEvento || p.status || "—")}</td>
+          <td><span class="status ${p.__nextPrazo ? countdown(p.__nextPrazo).cls : "ok"}">${escapeHtml(next)}</span></td>
+          <td>
+            <button class="btn small" onclick="window.__selProc('${p.id}')">Abrir</button>
+          </td>
+        </tr>
+      `;
+    }).join("") || `<tr><td colspan="8" class="muted">Nenhum processo encontrado. Importe um relatório de processos.</td></tr>`;
+
+    renderProcDetalhe();
+  }
+
+  function renderProcDetalhe(){
+    if(!$("procDetalhe")) return;
+    const p = getProcById(selectedProcId);
+    const hint = $("procDetalheHint");
+    const box = $("procDetalhe");
+    if(!p){
+      hint.textContent = "Selecione um processo.";
+      box.className = "muted";
+      box.innerHTML = "Nenhum processo selecionado.";
+      return;
+    }
+    const numero = p.procKey || procKey(p.numero||p.__numero||"");
+    const cad = getCadastroById(p.cadastroId);
+    const cadNome = cad ? cad.nome : "—";
+    const st = procStatus(p);
+    const open = procOpenPrazos(numero).slice().sort((a,b)=>a.data.localeCompare(b.data));
+    const all = procAllPrazos(numero).slice().sort((a,b)=>a.data.localeCompare(b.data));
+    const archived = all.filter(x=>x.archived).slice(-8);
+
+    const lastTxt = p.lastEventTs ? formatDateTime(p.lastEventTs) : "—";
+    const distTxt = p.distribuicao ? formatData(p.distribuicao) : "—";
+    const valorTxt = p.valorCausa ? formatBRL(p.valorCausa) : "—";
+
+    hint.textContent = `${numero}`;
+
+    box.className = "";
+    box.innerHTML = `
+      <div class="row" style="justify-content:space-between; align-items:flex-end">
+        <div>
+          <div><span class="status ${st.cls}">${escapeHtml(st.label)}</span></div>
+          <div style="margin-top:6px"><strong>${escapeHtml(cadNome)}</strong> <span class="muted">• cadastro</span></div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end">
+          ${cad ? `<button class="btn small" onclick="window.__selCad('${cad.id}')">Abrir cadastro</button>` : ``}
+          <button class="btn small ghost" onclick="window.__gotoPrazosProc('${escJs(numero)}')">Ver prazos deste processo</button>
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="kpis" style="margin-top:0">
+        <div class="kpi brand"><div class="lbl">Prazos abertos</div><div class="val">${open.length}</div></div>
+        <div class="kpi brand"><div class="lbl">Distribuição</div><div class="val">${escapeHtml(distTxt)}</div></div>
+        <div class="kpi brand"><div class="lbl">Valor da causa</div><div class="val">${escapeHtml(valorTxt)}</div></div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="row" style="gap:14px; align-items:flex-start">
+        <div style="flex:1; min-width:260px">
+          <div class="hint">Partes</div>
+          <div class="muted" style="margin-top:6px">${escapeHtml((p.autores && p.reus) ? (p.autores + " X " + p.reus) : (p.partes || [p.autores,p.reus].filter(Boolean).join(" X ") || "—"))}</div>
+
+          <div style="height:10px"></div>
+          <div class="hint">Classe • Assunto</div>
+          <div class="muted" style="margin-top:6px">${escapeHtml([p.classe,p.assunto].filter(Boolean).join(" • ") || "—")}</div>
+
+          <div style="height:10px"></div>
+          <div class="hint">Órgão / Localidade</div>
+          <div class="muted" style="margin-top:6px">${escapeHtml(p.orgao || "—")}</div>
+        </div>
+
+        <div style="flex:1; min-width:260px">
+          <div class="hint">Último evento</div>
+          <div class="muted" style="margin-top:6px">${escapeHtml(p.ultimoEvento || p.status || "—")}</div>
+          <div class="muted" style="margin-top:6px">Data/Hora: <span class="mono">${escapeHtml(lastTxt)}</span></div>
+
+          <div style="height:10px"></div>
+          <div class="hint">Prazos abertos</div>
+          <div class="tablewrap" style="max-height:220px; margin-top:8px">
+            <table style="min-width:unset">
+              <thead><tr><th style="width:110px">Data</th><th style="width:210px">Restante</th><th>Nome</th></tr></thead>
+              <tbody>
+                ${
+                  open.map(x=>{
+                    const cd = countdown(x.data);
+                    return `<tr><td class="mono">${formatData(x.data)}</td><td><span class="status mono ${cd.cls}">${escapeHtml(cd.label)}</span></td><td><strong>${escapeHtml(x.desc||"-")}</strong>${x.comentario?`<div class="muted">${escapeHtml(x.comentario)}</div>`:""}</td></tr>`;
+                  }).join("") || `<tr><td colspan="3" class="muted">Nenhum prazo aberto.</td></tr>`
+                }
+              </tbody>
+            </table>
+          </div>
+
+          ${archived.length ? `
+            <div style="height:10px"></div>
+            <div class="hint">Últimos arquivados</div>
+            <div class="muted" style="margin-top:6px">${escapeHtml(archived.map(x=>`${formatData(x.data)} • ${x.desc||"-"}`).join(" | "))}</div>
+          ` : ``}
+        </div>
+      </div>
+    `;
+  }
+
+  // ===== Exportação: base completa =====
+  function exportarBase(){
+    try{
+      if(typeof XLSX === "undefined"){
+        toast("warn","Biblioteca XLSX","Não carregou. Verifique sua conexão e recarregue a página.");
+        return;
+      }
+      const wb = XLSX.utils.book_new();
+
+      // Cadastros
+      const cadRows = state.cadastros.map(c=>({
+        id: c.id || "",
+        nome: c.nome || "",
+        apelidos: (c.aliases||[]).join("; "),
+        cpf: c.cpf || "",
+        telefone: c.telefone || "",
+        qualificacao: c.qualificacao || "",
+        notas: c.notas || ""
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(cadRows, {skipHeader:false}), "Cadastros");
+
+      // Processos
+      const procRows = state.processos.map(p=>({
+        id: p.id || "",
+        numero: p.numero || "",
+        cadastroId: p.cadastroId || "",
+        cadastro: cadNome(p.cadastroId),
+        partes: p.partes || "",
+        autores: p.autores || "",
+        reus: p.reus || "",
+        classe: p.classe || "",
+        assunto: p.assunto || "",
+        orgao: p.orgao || "",
+        ultimoEvento: p.ultimoEvento || p.status || "",
+        lastEvent: p.lastEventTs ? new Date(p.lastEventTs) : "",
+        distribuicao: p.distribuicao || "",
+        valorCausa: p.valorCausa || "",
+        statusGroup: p.statusGroup || (p.baixado ? "arquivado" : "ativo"),
+        origem: p.origem || "XLS"
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(procRows, {skipHeader:false}), "Processos");
+
+      // Prazos
+      const prazoRows = state.prazos.map(p=>({
+        id: p.id || "",
+        processo: p.processo || "",
+        cadastroId: p.cadastroId || "",
+        cadastro: cadNome(p.cadastroId),
+        cliente: p.cliente || "",
+        nome: p.desc || "",
+        data: p.data || "",
+        comentario: p.comentario || "",
+        observacoes: p.obs || "",
+        arquivado: p.archived ? "sim" : "nao",
+        origem: p.origem || "XLS"
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prazoRows, {skipHeader:false}), "Prazos");
+
+      // Meta
+      const meta = [{exportado_em: new Date().toISOString(), versao_app: "v12"}];
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(meta, {skipHeader:false}), "Meta");
+
+      const fname = `Fauque_Base_${hojeISO()}.xlsx`;
+      XLSX.writeFile(wb, fname);
+      toast("ok","Exportado","Base completa gerada.");
+    }catch(e){
+      console.error(e);
+      toast("bad","Falha na exportação", ((e && e.message) || String(e)));
+    }
+  }
+
+
+  // ===== Backup em TXT (portável) =====
+  function exportarBackupTXT(){
+    try{
+      const payload = {
+        app: "FauqueGestaoJuridica",
+        exportedAt: new Date().toISOString(),
+        data: {
+          cadastros: state.cadastros || [],
+          processos: state.processos || [],
+          prazos: state.prazos || [],
+          logoDataUrl: state.logoDataUrl || null,
+          lastFeedAt: state.lastFeedAt || null
+        }
+      };
+      const txt = JSON.stringify(payload, null, 2);
+      const blob = new Blob([txt], {type:"text/plain;charset=utf-8"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `fauque_backup_${new Date().toISOString().slice(0,10)}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=> URL.revokeObjectURL(url), 5000);
+      toast("ok","Backup gerado","Arquivo .txt exportado.");
+    }catch(e){
+      toast("bad","Falha ao exportar", ((e && e.message) || String(e)));
+    }
+  }
+
+    
+function exportarAppCompletoHTML(){
+  try{
+    const embState = {
+      prazos: state.prazos || [],
+      cadastros: state.cadastros || [],
+      processos: state.processos || [],
+      logoDataUrl: state.logoDataUrl || null,
+      lastFeedAt: state.lastFeedAt || null
+    };
+
+    // IMPORTANT: o script embutido precisa vir ANTES do script principal do app.
+    const json = JSON.stringify(embState).split("</scr"+"ipt>").join("<\/scr"+"ipt>");
+
+    const embScript = `<script id="__FAUQUE_EMBEDDED_STATE__">window.__FAUQUE_EMBEDDED_STATE__=${json};<\/script>`;
+
+    let out = document.documentElement.outerHTML;
+
+    // 1) Se já existir um script de estado embutido, substitui.
+    if(/<script\s+id="__FAUQUE_EMBEDDED_STATE__"/i.test(out)){
+      out = out.replace(/<script\s+id="__FAUQUE_EMBEDDED_STATE__"[\s\S]*?<\/script>/i, embScript);
+    }else{
+      // 2) Caso não exista (versões antigas), injeta no <head>.
+      out = out.replace(/<\/head>/i, embScript + "\n</head>");
+    }
+
+    if(!/^<!doctype html>/i.test(out.trim())) out = '<!DOCTYPE html>\n' + out;
+
+    const blob = new Blob([out], {type:'text/html;charset=utf-8'});
+    const name = `Fauque_Gestao_Completo_${new Date().toISOString().slice(0,10)}.html`;
+    baixarBlob(blob, name);
+    toast('ok','Exportado','App completo (.html) gerado com os dados embutidos.');
+  }catch(e){
+    console.error(e);
+    toast('bad','Falha ao exportar', (e && e.message) || String(e));
+  }
+}
+
+function importarBackupTXT(file){
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const raw = String(reader.result || "");
+        const obj = JSON.parse(raw);
+        if(!obj || !obj.data) throw new Error("Arquivo inválido.");
+        const d = obj.data;
+
+        // aplica
+        state.cadastros = Array.isArray(d.cadastros) ? d.cadastros : [];
+        state.processos = Array.isArray(d.processos) ? d.processos : [];
+        state.prazos = Array.isArray(d.prazos) ? d.prazos : [];
+        state.logoDataUrl = d.logoDataUrl || null;
+        state.lastFeedAt = d.lastFeedAt || Date.now();
+
+        save();
+        renderAll();
+        toast("ok","Backup importado","Dados restaurados com sucesso.");
+      }catch(e){
+        toast("bad","Falha ao importar", ((e && e.message) || String(e)));
+      }
+    };
+    reader.onerror = ()=> toast("bad","Falha ao ler arquivo","Tente novamente.");
+    reader.readAsText(file);
+  }
+
+  function importarBase(wb, filename){
+    try{
+      const toJson = (name)=> XLSX.utils.sheet_to_json(wb.Sheets[name], {defval:""});
+      const cad = (wb.SheetNames.includes("Cadastros") ? toJson("Cadastros") : []).map(r=>{
+        const id = String(r.id || "").trim() || uuid();
+        const nome = String(r.nome || "").trim();
+        const apel = String(r.apelidos || r.aliases || "").trim();
+        const aliases = apel ? apel.split(/[;,]/).map(x=>x.trim()).filter(Boolean) : [];
+        return {
+          id,
+          nome,
+          aliases,
+          cpf: String(r.cpf || "").trim(),
+          telefone: String(r.telefone || "").trim(),
+          qualificacao: String(r.qualificacao || "").trim(),
+          notas: String(r.notas || "").trim()
+        };
+      }).filter(r=>r.nome);
+
+      const procs = (wb.SheetNames.includes("Processos") ? toJson("Processos") : []).map(r=>{
+        const id = String(r.id || "").trim() || uuid();
+        const numero = String(r.numero || r.processo || "").trim();
+        const cadId = String(r.cadastroId || "").trim();
+        const lastEvent = r.lastEvent instanceof Date ? r.lastEvent.getTime() : (r.lastEvent ? new Date(r.lastEvent).getTime() : 0);
+        return {
+          id,
+          cadastroId: cadId || null,
+          numero,
+          procKey: numeroKey || numero,
+          partes: String(r.partes || "").trim(),
+          autores: String(r.autores || "").trim(),
+          reus: String(r.reus || "").trim(),
+          classe: String(r.classe || "").trim(),
+          assunto: String(r.assunto || "").trim(),
+          orgao: String(r.orgao || "").trim(),
+          ultimoEvento: String(r.ultimoEvento || r.status || "").trim(),
+          status: String(r.ultimoEvento || r.status || "").trim(),
+          lastEventTs: isFinite(lastEvent) ? lastEvent : 0,
+          distribuicao: String(r.distribuicao || "").trim(),
+          valorCausa: (r.valorCausa!=="" && r.valorCausa!=null && !isNaN(Number(r.valorCausa))) ? Number(r.valorCausa) : 0,
+          statusGroup: String(r.statusGroup || "").trim() || null,
+          baixado: String(r.statusGroup||"").toLowerCase()!=="ativo" ? true : false,
+          origem: String(r.origem || "BASE").trim()
+        };
+      }).filter(r=>r.numero);
+
+      const prazos = (wb.SheetNames.includes("Prazos") ? toJson("Prazos") : []).map(r=>{
+        const id = String(r.id || "").trim() || uuid();
+        const data = String(r.data || r.data_final || r["Data"] || "").trim();
+        return {
+          id,
+          cadastroId: String(r.cadastroId || "").trim() || null,
+          cliente: String(r.cliente || "").trim(),
+          processo: String(r.processo || "").trim(),
+          desc: String(r.nome || r.desc || "").trim(),
+          data,
+          comentario: String(r.comentario || "").trim(),
+          obs: String(r.observacoes || r.obs || "").trim(),
+          archived: String(r.arquivado || "").toLowerCase().includes("sim"),
+          origem: String(r.origem || "BASE").trim()
+        };
+      }).filter(r=>r.data && r.desc);
+
+      if(cad.length) state.cadastros = cad;
+      if(procs.length) state.processos = procs;
+      if(prazos.length) state.prazos = prazos;
+
+      const ok = save();
+      if(!ok){
+        logXLS("Importei a base, mas não consegui salvar (limite do navegador).");
+        return;
+      }
+      renderAll();
+      logXLS(`Base importada ✅\nArquivo: ${filename}\nCadastros: ${state.cadastros.length}\nProcessos: ${state.processos.length}\nPrazos: ${state.prazos.length}`);
+      toast("ok","Base importada","Tudo restaurado.");
+    }catch(e){
+      console.error(e);
+      logXLS("Erro ao importar base: " + ((e && e.message) || e));
+      toast("bad","Erro ao importar base", ((e && e.message) || String(e)));
+    }
+  }
+
+
+
+  // ===== Render: Clientes (Painel) =====
+  function renderCadastrosPainel(){
+    const q = norm($("cliPainelBusca").value);
+    const ordem = $("cliPainelOrdem").value;
+
+    let arr = state.cadastros.slice();
+    if(q) arr = arr.filter(c=>norm(c.nome).includes(q));
+
+    const scored = arr.map(c=>{
+      const k = cadKPIs(c);
+      const nextScore = k.proximo ? diffDias(k.proximo, hojeISO()) : 999999;
+      return { c, k, nextScore };
+    });
+
+    if(ordem==="nomeAsc") scored.sort((a,b)=>a.c.nome.localeCompare(b.c.nome));
+    if(ordem==="nomeDesc") scored.sort((a,b)=>b.c.nome.localeCompare(a.c.nome));
+    if(ordem==="maisPrazos") scored.sort((a,b)=> (b.k.total-a.k.total) || a.c.nome.localeCompare(b.c.nome));
+    if(ordem==="proximo") scored.sort((a,b)=> (a.nextScore-b.nextScore) || a.c.nome.localeCompare(b.c.nome));
+
+    $("tabelaCadastrosPainel").innerHTML = scored.map(x=>{
+      const prox = x.k.proximo ? formatData(x.k.proximo) : "-";
+      const cd = x.k.proximo ? countdown(x.k.proximo) : {cls:"ok"};
+      const active = (selectedPainelCadId===x.c.id) ? `style="outline:1px solid rgba(225,29,72,.55); outline-offset:-2px; background: rgba(225,29,72,.06)"` : "";
+      return `
+        <tr ${active}>
+          <td>
+            <a href="#" class="linklike" onclick="window.__selPainel('${x.c.id}'); return false;"><strong>${escapeHtml(x.c.nome)}</strong></a>
+            <div class="muted">${x.k.total} prazo(s) • ${x.k.processos} processo(s)</div>
+          </td>
+          <td class="mono">${x.k.total}</td>
+          <td><span class="status ${cd.cls}">${escapeHtml(prox)}</span></td>
+          <td>            <button class="btn small ghost" onclick="window.__abrirCad('${x.c.id}')">Editar</button>
+          </td>
+        </tr>
+      `;
+    }).join("") || `<tr><td colspan="4" class="muted">Nenhum cadastro encontrado.</td></tr>`;
+  }
+
+  function renderPainelDetalhe(){
+    const hint = $("painelHint");
+    const box = $("painelDetalhe");
+
+    const c = state.cadastros.find(x=>x.id===selectedPainelCadId) || null;
+    if(!c){
+      hint.textContent = "Selecione um cadastro.";
+      box.innerHTML = `<div class="muted">Nenhum cadastro selecionado.</div>`;
+      return;
+    }
+    const k = cadKPIs(c);
+    hint.textContent = c.nome;
+
+    // agrupamento por processo
+    const map = new Map();
+    for(const p of k.prazos){
+      const proc = (p.processo || "— sem processo —").trim();
+      if(!map.has(proc)) map.set(proc, []);
+      map.get(proc).push(p);
+    }
+    for(const [proc, arr] of map){
+      arr.sort((a,b)=>a.data.localeCompare(b.data));
+    }
+
+    const proximoTxt = k.proximo ? formatData(k.proximo) : "—";
+    const venceHojeTxt = k.venceHoje ? String(k.venceHoje) : "0";
+
+    box.innerHTML = `
+      <div class="muted" style="margin-bottom:10px">
+        ${escapeHtml([c.cpf?("CPF: "+c.cpf):"", c.telefone?("Tel: "+c.telefone):""].filter(Boolean).join(" • ") || "—")}
+      </div>
+      ${c.qualificacao ? `<div class="muted" style="margin-bottom:10px">${escapeHtml(c.qualificacao)}</div>` : ``}
+      <div class="kpis" style="margin-top:0">
+        <div class="kpi brand"><div class="lbl">Prazos</div><div class="val">${k.total}</div></div>
+        <div class="kpi warn"><div class="lbl">Vence hoje</div><div class="val">${venceHojeTxt}</div></div>
+        <div class="kpi brand"><div class="lbl">Próximo</div><div class="val">${escapeHtml(proximoTxt)}</div></div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="row">
+        <button class="btn small primary" onclick="window.__filtrarCadastro('${c.id}')">Ver prazos deste cadastro</button>
+        <button class="btn small ghost" onclick="window.__abrirCad('${c.id}')">Editar cadastro</button>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="hint">Processos vinculados</div>
+      <div class="tablewrap" style="max-height:320px; margin-top:8px">
+        <table style="min-width:unset">
+          <thead><tr><th>Processo</th><th style="width:120px">Prazos</th><th style="width:160px">Próximo</th></tr></thead>
+          <tbody>
+            ${
+              Array.from(map.entries()).map(([proc, arr])=>{
+                const _f = arr.find(p=>diffDias(p.data, hojeISO())>=0);
+                const next = (_f ? _f.data : (arr.length ? arr[arr.length-1].data : ""));
+                const cd = next ? countdown(next) : {cls:"ok"};
+                return `
+                  <tr>
+                    <td class="mono">${escapeHtml(proc)}</td>
+                    <td class="mono">${arr.length}</td>
+                    <td><span class="status ${cd.cls}">${escapeHtml(next ? formatData(next) : "-")}</span></td>
+                  </tr>
+                `;
+              }).join("") || `<tr><td colspan="3" class="muted">Nenhum prazo vinculado.</td></tr>`
+            }
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function selectPainelCad(id){
+    selectedPainelCadId = id;
+    renderCadastrosPainel();
+    renderPainelDetalhe();
+  }
+
+  // ===== Render: Cadastros (lista + vínculos) =====
+  function renderCadastrosList(){
+    const q = norm($("cadBusca").value);
+    const arr = state.cadastros
+      .slice()
+      .filter(c=>!q || norm(c.nome).includes(q))
+      .sort((a,b)=>a.nome.localeCompare(b.nome));
+
+    $("tabelaCadastros").innerHTML = arr.map(c=>{
+      const apelidosCount = (c.aliases||[]).length;
+      const k = cadKPIs(c);
+      const active = (selectedCadId===c.id) ? `style="outline:1px solid rgba(225,29,72,.55); outline-offset:-2px; background: rgba(225,29,72,.06)"` : "";
+      const meta = [c.cpf ? `CPF: ${c.cpf}` : "", c.telefone ? `Tel: ${c.telefone}` : ""].filter(Boolean).join(" • ");
+      return `
+        <tr ${active}>
+          <td>
+            <strong>${escapeHtml(c.nome)}</strong>
+            <div class="muted">${meta || "—"}</div>
+          </td>
+          <td class="mono">${apelidosCount}</td>
+          <td class="mono">${k.processos}</td>
+          <td class="mono">${k.total}</td>
+          <td>
+            <button class="btn small" onclick="window.__selCad('${c.id}')">Abrir</button>
+            <button class="btn small ghost" onclick="window.__selPainel('${c.id}')">Painel</button>
+          </td>
+        </tr>
+      `;
+    }).join("") || `<tr><td colspan="5" class="muted">Nenhum cadastro.</td></tr>`;
+  }
+
+  function renderCadastroVinculos(){
+    const box = $("cadVinculos");
+    const c = state.cadastros.find(x=>x.id===selectedCadId) || null;
+    if(!c){
+      box.innerHTML = `<div class="muted">Selecione um cadastro para ver os vínculos.</div>`;
+      return;
+    }
+    const k = cadKPIs(c);
+
+    // agrupa por processo
+    const map = new Map();
+    for(const p of k.prazos){
+      const proc = (p.processo || "— sem processo —").trim();
+      if(!map.has(proc)) map.set(proc, []);
+      map.get(proc).push(p);
+    }
+    for(const [proc, arr] of map) arr.sort((a,b)=>a.data.localeCompare(b.data));
+
+    const next = k.proximo ? formatData(k.proximo) : "—";
+    box.innerHTML = `
+      <div class="muted" style="margin-bottom:10px">
+        ${escapeHtml([c.cpf?("CPF: "+c.cpf):"", c.telefone?("Tel: "+c.telefone):""].filter(Boolean).join(" • ") || "—")}
+      </div>
+      ${c.qualificacao ? `<div class="muted" style="margin-bottom:10px">${escapeHtml(c.qualificacao)}</div>` : ``}
+      <div class="kpis" style="margin-top:0">
+        <div class="kpi brand"><div class="lbl">Prazos</div><div class="val">${k.total}</div></div>
+        <div class="kpi warn"><div class="lbl">Vence hoje</div><div class="val">${k.venceHoje}</div></div>
+        <div class="kpi brand"><div class="lbl">Próximo</div><div class="val">${escapeHtml(next)}</div></div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="hint">Prazos do cadastro</div>
+      <div class="tablewrap" style="max-height:260px; margin-top:8px">
+        <table style="min-width:unset">
+          <thead><tr><th style="width:110px">Data</th><th style="width:210px">Restante</th><th>Processo</th><th>Descrição</th><th style="width:120px">Ações</th></tr></thead>
+          <tbody>
+            ${
+              k.prazos
+                .slice()
+                .sort((a,b)=>a.data.localeCompare(b.data))
+                .map(p=>{
+                  const cd = countdown(p.data);
+                  return `
+                    <tr>
+                      <td class="mono">${formatData(p.data)}</td>
+                      <td><span class="status mono ${cd.cls}">${escapeHtml(cd.label)}</span></td>
+                      <td class="mono">${escapeHtml(p.processo || "—")}</td>
+                      <td><strong>${escapeHtml(p.desc || "-")}</strong>${p.obs?`<div class="muted">${escapeHtml(p.obs)}</div>`:""}</td>
+                      <td><button class="btn small" onclick="window.__editPrazo('${p.id}')">Abrir</button></td>
+                    </tr>
+                  `;
+                }).join("") || `<tr><td colspan="5" class="muted">Nenhum prazo vinculado.</td></tr>`
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div style="height:10px"></div>
+      <div class="hint">Processos (resumo)</div>
+      <div class="tablewrap" style="max-height:220px; margin-top:8px">
+        <table style="min-width:unset">
+          <thead><tr><th>Processo</th><th style="width:120px">Prazos</th><th style="width:160px">Próximo</th></tr></thead>
+          <tbody>
+            ${
+              Array.from(map.entries()).map(([proc, arr])=>{
+                const _f2 = arr.find(p=>diffDias(p.data, hojeISO())>=0);
+                const nextIso = (_f2 ? _f2.data : (arr.length ? arr[arr.length-1].data : ""));
+                const cd = nextIso ? countdown(nextIso) : {cls:"ok"};
+                return `
+                  <tr>
+                    <td class="mono">${escapeHtml(proc)}</td>
+                    <td class="mono">${arr.length}</td>
+                    <td><span class="status ${cd.cls}">${escapeHtml(nextIso ? formatData(nextIso) : "-")}</span></td>
+                  </tr>
+                `;
+              }).join("") || `<tr><td colspan="3" class="muted">Nenhum processo.</td></tr>`
+            }
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // ===== Importação XLS =====
+  function logXLS(msg){ $("xlsLog").textContent = msg; }
+
+  function excelDateToISO(v){
+    if(!v) return "";
+    if(v instanceof Date) return v.toISOString().slice(0,10);
+    if(typeof v === "number" && typeof XLSX !== "undefined"){
+      const d = XLSX.SSF.parse_date_code(v);
+      if(!d) return "";
+      const yyyy = String(d.y).padStart(4,"0");
+      const mm = String(d.m).padStart(2,"0");
+      const dd = String(d.d).padStart(2,"0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    const s = String(v).trim();
+    const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if(iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+    const br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+    if(br) return `${br[3]}-${br[2]}-${br[1]}`;
+    return "";
+  }
+
+  function headCell(v){
+    return String(v||"")
+      .replace(/\u00A0/g," ")
+      .replace(/\s+/g," ")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,""); // remove acentos
+  }
+
+  function findHeaderRow(rows){
+    const max = Math.min(60, rows.length);
+
+    // detecta cabeçalho por "pontuação" (evita pegar linha-título tipo "Relatório de Processos")
+    const scoreRow = (row)=>{
+      const r = (row||[]).map(headCell);
+      const nonEmpty = r.filter(x=>x && x.trim()).length;
+
+      // precisa ser uma linha realmente tabular
+      if(nonEmpty < 4) return 0;
+
+      let s = 0;
+      const has = (t)=> r.includes(t);
+
+      // marcadores de relatório de PROCESSOS
+      if(has("número processo") || has("numero processo") || has("nº processo") || has("nr processo")) s += 4;
+      if(has("autores") || has("autores principais") || has("exequente") || has("requerente") || has("polo ativo")) s += 3;
+      if(has("réu") || has("reus") || has("réus") || has("reu(s)") || has("réu(s)") || has("executado") || has("requerido") || has("polo passivo")) s += 3;
+      if(has("classe")) s += 2;
+      if(has("assunto")) s += 2;
+      if(has("último evento") || has("ultimo evento")) s += 2;
+      if(has("data/hora") || has("data hora")) s += 1;
+      if(has("data de distribuição do processo") || has("data de distribuicao do processo") || has("distribuição") || has("distribuicao")) s += 1;
+      if(has("valor da causa") || has("valor")) s += 1;
+
+      // marcadores de relatório de PRAZOS (também usa "processo")
+      if(has("final prazo") || has("data final") || has("prazo final")) s += 3;
+      if(has("evento e prazo") || has("descrição") || has("descricao") || has("evento")) s += 1;
+
+      // precisa conter alguma pista de processo/prazo
+      if(!r.join(" ").includes("processo")) s = 0;
+
+      return s;
+    };
+
+    let bestIdx = -1;
+    let bestScore = 0;
+
+    for(let r=0; r<max; r++){
+      const row = rows[r] || [];
+      const sc = scoreRow(row);
+      if(sc > bestScore){
+        bestScore = sc;
+        bestIdx = r;
+      }
+    }
+
+    // limiar: evita falso positivo em linhas-título
+    if(bestScore >= 6) return bestIdx;
+
+    // fallback bem conservador: procura linha com "número processo" ou "final prazo"
+    for(let r=0; r<max; r++){
+      const row = (rows[r] || []).map(headCell);
+      if(row.includes("número processo") || row.includes("numero processo") || row.includes("final prazo") || row.includes("data final")){
+        return r;
+      }
+    }
+    return -1;
+  }
+
+async function importar(){
+    const input = $("xlsFile");
+    const file = input.files && input.files[0];
+    if(!file){
+      toast("warn","Sem arquivo","Selecione um .xls/.xlsx.");
+      return;
+    }
+    if(typeof XLSX === "undefined"){
+      logXLS("A biblioteca XLSX não carregou. Conecte à internet e atualize (F5). O app continua funcionando sem importação.");
+      toast("warn","XLSX não carregou","Fique online e atualize a página.");
+      return;
+    }
+
+    const clip = (s, n)=> {
+      s = String(s||"").replace(/\s+/g," ").trim();
+      return s.length>n ? (s.slice(0,n-1)+"…") : s;
+    };
+
+    // Lê célula sem criar matriz gigante
+    const cellVal = (ws, r, c)=>{
+      const addr = XLSX.utils.encode_cell({r, c});
+      const cell = ws[addr];
+      return cell ? cell.v : "";
+    };
+
+    const excelToISO = (v)=>{
+      if(!v) return "";
+      if(v instanceof Date) return v.toISOString().slice(0,10);
+      if(typeof v === "number"){
+        // tenta converter número excel (dias)
+        try{
+          const d = XLSX.SSF && XLSX.SSF.parse_date_code ? XLSX.SSF.parse_date_code(v) : null;
+          if(d && d.y && d.m && d.d){
+            const yyyy = String(d.y).padStart(4,"0");
+            const mm = String(d.m).padStart(2,"0");
+            const dd = String(d.d).padStart(2,"0");
+            return `${yyyy}-${mm}-${dd}`;
+          }
+        }catch(e){}
+        return "";
+      }
+      const s = String(v).trim();
+      const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if(iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+      const br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+      if(br) return `${br[3]}-${br[2]}-${br[1]}`;
+      return "";
+    };
+
+
+    const excelToTS = (v)=>{
+      if(!v) return 0;
+      if(v instanceof Date) return v.getTime();
+      if(typeof v === "number"){
+        try{
+          const d = XLSX.SSF && XLSX.SSF.parse_date_code ? XLSX.SSF.parse_date_code(v) : null;
+          if(d && d.y && d.m && d.d){
+            const dt = new Date(d.y, (d.m||1)-1, d.d||1, d.H||0, d.M||0, Math.floor(d.S||0));
+            return dt.getTime();
+          }
+        }catch(e){}
+        return 0;
+      }
+      const s = String(v).trim();
+      // dd/mm/yyyy hh:mm
+      const br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2}))?/);
+      if(br){
+        const hh = br[4] ? Number(br[4]) : 0;
+        const mm = br[5] ? Number(br[5]) : 0;
+        const dt = new Date(Number(br[3]), Number(br[2])-1, Number(br[1]), hh, mm, 0);
+        return dt.getTime();
+      }
+      const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+      if(iso){
+        const hh = iso[4] ? Number(iso[4]) : 0;
+        const mm = iso[5] ? Number(iso[5]) : 0;
+        const dt = new Date(Number(iso[1]), Number(iso[2])-1, Number(iso[3]), hh, mm, 0);
+        return dt.getTime();
+      }
+      return 0;
+    };
+
+    const parseValor = (v)=>{
+      if(v==null || v==="") return 0;
+      if(typeof v === "number" && isFinite(v)) return v;
+      let s = String(v);
+      // normaliza NBSP e espaços
+      s = s.replace(/\u00A0/g," ").trim();
+      // remove "R$" e outros símbolos
+      s = s.replace(/[^0-9,\.-]/g,"");
+      if(!s) return 0;
+      // se tiver vírgula como decimal, converte pt-BR
+      const hasComma = s.indexOf(",")>=0;
+      if(hasComma){
+        // remove pontos de milhar
+        s = s.replace(/\./g,"").replace(/,/g,".");
+      }
+      const n = Number(s);
+      return isFinite(n) ? n : 0;
+    };
+
+
+    const idxAny = (header, names)=>{
+      const h = (header||[]).map(headCell);
+      for(const nm of names){
+        const n = headCell(nm);
+        const i = h.indexOf(n);
+        if(i>=0) return i;
+      }
+      // fallback por "contém"
+      for(const nm of names){
+        const n = headCell(nm);
+        const i = h.findIndex(x=> x && n && x.indexOf(n)>=0);
+        if(i>=0) return i;
+      }
+      // fallback especial: tokens
+      for(const nm of names){
+        const n = headCell(nm);
+        if(!n) continue;
+        const tokens = n.split(" ").filter(Boolean);
+        const i = h.findIndex(x=> tokens.every(t=>x.indexOf(t)>=0));
+        if(i>=0) return i;
+      }
+      return -1;
+    };
+
+    const looksBaixado = (statusText)=>{
+      const s = String(statusText||"").toLowerCase();
+      // indicativos fortes de encerramento/baixa/arquivamento
+      return (
+        s.includes("baixa") ||         // "Baixa Definitiva"
+        s.includes("baixad") ||        // "baixado"
+        s.includes("arquiv") ||        // "arquivado"
+        s.includes("extin") ||         // "extinção/extinto"
+        s.includes("transit") ||       // "trânsito em julgado"
+        s.includes("encerr") ||        // "encerrado"
+        s.includes("finaliz")          // "finalizado"
+      );
+    };
+
+    try{
+      logXLS(`Lendo: ${file.name} ...`);
+      toast("brand","Importando","Lendo arquivo…");
+
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type:"array", cellDates:true, dense:false });
+      // Detecta base exportada (app) — restaura tudo de uma vez
+      if(wb.SheetNames && wb.SheetNames.includes("Cadastros") && wb.SheetNames.includes("Prazos")){
+        importarBase(wb, file.name);
+        return;
+      }
+
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      if(!ws || !ws["!ref"]){
+        logXLS("Planilha vazia ou inválida.");
+        toast("warn","Planilha vazia","Não encontrei dados.");
+        return;
+      }
+
+      const range = XLSX.utils.decode_range(ws["!ref"]);
+      const maxCols = Math.min(range.e.c, range.s.c + 160);
+      const maxScanRows = Math.min(range.e.r, range.s.r + 140);
+
+      // ===== Encontra linha de cabeçalho (sem materializar tudo) =====
+      let headerRow = -1;
+      let bestScore = -1;
+      let bestNonEmpty = -1;
+
+      for(let r=range.s.r; r<=maxScanRows; r++){
+        let score = 0;
+        let hasProc = false;
+        let nonEmpty = 0;
+
+        for(let c=range.s.c; c<=maxCols; c++){
+          const v = cellVal(ws, r, c);
+          if(v===null || v===undefined) continue;
+          const s = String(v).trim();
+          if(!s) continue;
+
+          nonEmpty++;
+          const t = s.toLowerCase();
+
+          if(t === "processo" || t.includes("processo")) { score += 6; hasProc = true; }
+          if(t.includes("número") && t.includes("processo")) score += 4;
+
+          if(t.includes("autor")) score += 3;
+          if(t.includes("réu") || t.includes("reus") || t.includes("reu")) score += 3;
+
+          if(t.includes("classe")) score += 2;
+          if(t.includes("assunto")) score += 2;
+
+          if(t.includes("localidade") || t.includes("comarca") || t.includes("vara") || t.includes("juízo") || t.includes("juizo") || t.includes("órgão") || t.includes("orgao")) score += 2;
+
+          if(t.includes("último") || t.includes("ultimo")) score += 2;
+          if(t.includes("data") || t.includes("hora")) score += 1;
+
+          if(t.includes("prazo")) score += 2;
+          if(t.includes("final")) score += 1;
+
+          if(t.includes("status") || t.includes("situa") || t.includes("andamento") || t.includes("fase")) score += 1;
+        }
+
+        if(!hasProc || nonEmpty < 3) continue;
+
+        if(score > bestScore || (score === bestScore && nonEmpty > bestNonEmpty)){
+          bestScore = score;
+          bestNonEmpty = nonEmpty;
+          headerRow = r;
+        }
+      }
+
+      if(headerRow < 0){
+        logXLS("Não consegui localizar o cabeçalho. Certifique-se que a planilha tenha coluna de Processo.");
+        toast("warn","Cabeçalho não encontrado","Preciso localizar a coluna Processo.");
+        return;
+      }
+
+      const header = [];
+      for(let c=range.s.c; c<=maxCols; c++){
+        header.push(String(cellVal(ws, headerRow, c) || "").trim());
+      }
+
+      const iProc   = idxAny(header, ["Processo","Número Processo","Numero Processo","Número do processo","Numero do processo","Nº Processo","N. Processo","Nr Processo"]);
+      const iPart   = idxAny(header, ["Partes","Autores Principais","Autor(es)","Autores","Réu(s)","Réus","Reus","Polo Ativo","Polo Passivo","Cliente","Parte"]);
+      const iAutores= idxAny(header, ["Autores Principais","Autores","Autor(es)","Autor","Polo Ativo","Requerente","Exequente"]);
+      const iReus   = idxAny(header, ["Réu(s)","Réus","Reus","Réu","Polo Passivo","Requerido","Executado"]);
+      const iEvento = idxAny(header, ["Evento e Prazo","Evento","Prazo","Descrição","Descricao","Tarefa","Movimento"]);
+      const iFinal  = idxAny(header, ["Final Prazo","Data final","Data do prazo","Prazo final","Data limite","Vencimento","Data vencimento"]);
+
+      const iClasse = idxAny(header, ["Classe","Classe judicial"]);
+      const iAssunto= idxAny(header, ["Assunto","Assuntos"]);
+      const iOrgao  = idxAny(header, ["Localidade Judicial","Órgão","Orgao","Vara","Unidade","Juízo","Juizo","Órgão julgador","Orgao julgador"]);
+      const iInicio = idxAny(header, ["Início Prazo","Inicio Prazo","Início","Inicio","Data início","Data inicio","Data do início"]);
+
+      const iUltEvt = idxAny(header, ["Último Evento","Ultimo Evento","Último movimento","Ultimo movimento","Última movimentação","Ultima movimentação"]);
+      const iDataHoraEvt = idxAny(header, ["Data/Hora","Data Hora","Data/hora","Data do evento","Data da movimentação","Data da movimentacao"]);
+      const iDistrib = idxAny(header, ["Data de Distribuição do processo","Data de Distribuição","Data distribuicao","Distribuição","Distribuicao"]);
+      const iValorCausa = idxAny(header, ["Valor da Causa","Valor da causa","Valor"]);
+
+      const iStatus = idxAny(header, ["Situação","Situacao","Status","Andamento","Fase","Situação atual","Situacao atual","Último Evento","Ultimo Evento"]);
+      const iBaixa  = idxAny(header, ["Data Baixa","Baixa","Data arquivamento","Arquivamento","Data Encerramento","Encerramento","Data de baixa"]);
+
+      if(iProc < 0){
+        logXLS("Cabeçalho localizado, mas não encontrei a coluna Processo.");
+        toast("warn","Coluna faltando","Preciso de Processo.");
+        return;
+      }
+
+      // ===== Índices/sets para performance (evita O(n²)) =====
+      if(!state.processos) state.processos = [];
+
+      const procMap = new Map();
+      for(const p of state.processos){
+        const key = p.procKey || procKey(p.__numero || p.numero || p.processo || "");
+        if(key) procMap.set(key, p);
+      }
+
+      const prazoKey = (proc, data, desc)=> `${procKey(proc)}|||${data}|||${desc}`;
+      const prazoSet = new Set();
+      for(const p of state.prazos){
+        prazoSet.add(prazoKey(p.procKey || p.processo || "", p.data||"", p.desc||""));
+      }
+
+      let prazosAdd=0, prazosSkip=0, procAdd=0, procUpd=0, semPrazo=0, baixados=0;
+      const preview=[];
+      const nowISO = hojeISO();
+
+      // processa em "chunks" para não travar a UI
+      const startRow = headerRow + 1;
+      const totalRows = range.e.r - startRow + 1;
+      let processed = 0;
+
+      for(let r=startRow; r<=range.e.r; r++){
+        processed++;
+
+        // progresso (a cada 600 linhas)
+        if(processed % 600 === 0){
+          logXLS(`Importando… ${processed}/${totalRows} linhas processadas (não feche a aba)`);
+          await new Promise(res=>setTimeout(res, 0));
+        }
+
+        const numeroRaw = clip(cellVal(ws, r, range.s.c + iProc), 90);
+        if(!numeroRaw) continue;
+        const numeroKey = procKey(numeroRaw);
+        const numero = numeroKey || numeroRaw;
+
+        const autores = iAutores>=0 ? clip(cellVal(ws, r, range.s.c + iAutores), 280) : "";
+        const reus    = iReus>=0 ? clip(cellVal(ws, r, range.s.c + iReus), 280) : "";
+        const partesRaw = iPart>=0 ? clip(cellVal(ws, r, range.s.c + iPart), 340) : "";
+        const partes = (partesRaw || (autores && reus ? `${autores} X ${reus}` : (autores || reus || "")));
+
+        const classe = iClasse>=0 ? clip(cellVal(ws, r, range.s.c + iClasse), 120) : "";
+        const assunto= iAssunto>=0 ? clip(cellVal(ws, r, range.s.c + iAssunto), 220) : "";
+        const orgao  = iOrgao>=0 ? clip(cellVal(ws, r, range.s.c + iOrgao), 180) : "";
+        const ultimoEvento = iUltEvt>=0 ? clip(cellVal(ws, r, range.s.c + iUltEvt), 240) : "";
+        const status = (ultimoEvento || (iStatus>=0 ? clip(cellVal(ws, r, range.s.c + iStatus), 220) : ""));
+        const lastEventTs = iDataHoraEvt>=0 ? excelToTS(cellVal(ws, r, range.s.c + iDataHoraEvt)) : 0;
+
+        const distribuicao = iDistrib>=0 ? excelToISO(cellVal(ws, r, range.s.c + iDistrib)) : "";
+        const valorCausaRaw = iValorCausa>=0 ? cellVal(ws, r, range.s.c + iValorCausa) : "";
+        const valorCausa = parseValor(valorCausaRaw);
+
+        const dataBaixa = iBaixa>=0 ? excelToISO(cellVal(ws, r, range.s.c + iBaixa)) : "";
+
+        const statusLower = String([status, ultimoEvento, dataBaixa].filter(Boolean).join(" ")).toLowerCase();
+        // classifica melhor: "Baixa Definitiva" (baixa) deve virar Baixado, e arquivamento deve virar Arquivado
+        const statusGroup =
+          (dataBaixa ? "baixado"
+          : (statusLower.includes("baixa") || statusLower.includes("baixad")) ? "baixado"
+          : (statusLower.includes("arquiv") || statusLower.includes("arquivo")) ? "arquivado"
+          : (statusLower.includes("extin") || statusLower.includes("transit") || statusLower.includes("encerr") || statusLower.includes("finaliz")) ? "arquivado"
+          : "ativo");
+
+        const isBaixado = statusGroup !== "ativo";
+        if(isBaixado) baixados++;
+
+        // tenta sugerir cadastro por match textual (apenas se já existir cadastros)
+        let cadastroId = null;
+        try{
+          const tmpProc = { cadastroId:null, numero, partes, classe, assunto, orgao, status, dataBaixa };
+          const cad = findCadastroForProcess(tmpProc);
+          if(cad) cadastroId = cad.id;
+        }catch(e){}
+
+        // salva/atualiza processo
+        const old = procMap.get(numeroKey || numero);
+        const procItem = {
+          id: old ? old.id : uuid(),
+          cadastroId: old ? (old.cadastroId || cadastroId) : cadastroId,
+          numero,
+          procKey: numeroKey || numero,
+          partes,
+          autores,
+          reus,
+          classe,
+          assunto,
+          orgao,
+          ultimoEvento: ultimoEvento || status || "",
+          lastEventTs: lastEventTs || 0,
+          distribuicao,
+          valorCausa,
+          status: status || "",
+          statusGroup,
+          dataBaixa,
+          baixado: isBaixado,
+          origem: "XLS"
+        };
+        if(old){
+          // merge conservador (não apaga o que já tinha)
+          procMap.set(numeroKey || numero, {
+            ...old,
+            ...procItem,
+            partes: procItem.partes || old.partes || "",
+            autores: procItem.autores || old.autores || "",
+            reus: procItem.reus || old.reus || "",
+            classe: procItem.classe || old.classe || "",
+            assunto: procItem.assunto || old.assunto || "",
+            orgao: procItem.orgao || old.orgao || "",
+            ultimoEvento: procItem.ultimoEvento || old.ultimoEvento || "",
+            lastEventTs: procItem.lastEventTs || old.lastEventTs || 0,
+            distribuicao: procItem.distribuicao || old.distribuicao || "",
+            valorCausa: (procItem.valorCausa || procItem.valorCausa===0) ? procItem.valorCausa : (old.valorCausa || 0),
+            status: procItem.status || old.status || "",
+            statusGroup: procItem.statusGroup || old.statusGroup || "",
+            dataBaixa: procItem.dataBaixa || old.dataBaixa || "",
+            baixado: (typeof procItem.baixado==="boolean") ? procItem.baixado : old.baixado
+          });
+          procUpd++;
+        }else{
+          procMap.set(numeroKey || numero, procItem);
+          procAdd++;
+        }
+
+        // ===== Prazo (se existir) =====
+        let dataFinal = "";
+        if(iFinal>=0){
+          dataFinal = excelToISO(cellVal(ws, r, range.s.c + iFinal));
+        }
+        if(!dataFinal){
+          semPrazo++;
+          continue;
+        }
+
+        const evento = iEvento>=0 ? clip(cellVal(ws, r, range.s.c + iEvento), 220) : "Prazo importado";
+        const inicio = iInicio>=0 ? excelToISO(cellVal(ws, r, range.s.c + iInicio)) : "";
+
+        const isPast = diffDias(dataFinal, nowISO) < 0;
+        const archived = isPast || isBaixado;
+
+        const obs = [
+          classe ? `Classe: ${classe}` : "",
+          assunto ? `Assunto: ${assunto}` : "",
+          orgao ? `Órgão: ${orgao}` : "",
+          inicio ? `Início: ${formatData(inicio)}` : "",
+          status ? `Status: ${status}` : "",
+          dataBaixa ? `Baixa: ${formatData(dataBaixa)}` : "",
+          archived ? "Arquivado (baixado/vencido)" : "",
+          "Importado via XLS"
+        ].filter(Boolean).join(" | ");
+
+        // vínculo por cadastro
+        let prazoCadId = cadastroId;
+        if(!prazoCadId){
+          try{
+            const tmp = { cadastroId:null, cliente: partes, processo: numero,
+          procKey: numeroKey || numero, desc: evento, data: dataFinal, obs };
+            const cad2 = findCadastroForPrazo(tmp);
+            if(cad2) prazoCadId = cad2.id;
+          }catch(e){}
+        }
+
+        const key = prazoKey(numeroKey || numero, dataFinal, evento);
+        if(prazoSet.has(key)){ prazosSkip++; continue; }
+        prazoSet.add(key);
+
+        state.prazos.push({
+          id: uuid(),
+          cadastroId: prazoCadId,
+          cliente: partes,
+          processo: numero,
+          procKey: numeroKey || numero,
+          desc: evento,
+          data: dataFinal,
+          obs,
+          archived: archived ? true : false
+        });
+        prazosAdd++;
+
+        if(preview.length < 12){
+          preview.push(`• ${numero} — ${formatData(dataFinal)} — ${evento}${archived ? " (arquivado)" : ""}`);
+        }
+      }
+
+      // materializa processos (compactos) de volta no state
+      state.processos = Array.from(procMap.values());
+
+      // tenta salvar (pode falhar por quota)
+      const ok = save();
+      if(!ok){
+        logXLS("Importação feita, mas não consegui salvar (limite do navegador).");
+        return;
+      }
+
+      logXLS(
+        `Importação concluída ✅\nArquivo: ${file.name}\n`+
+        `Processos: +${procAdd} / ~${procUpd} (baixados: ${baixados})\n`+
+        `Prazos adicionados: ${prazosAdd} (ignorados por duplicidade: ${prazosSkip})\n`+
+        `Linhas sem prazo: ${semPrazo}\n`+
+        `Total de prazos no app: ${state.prazos.length}`
+      );
+
+      $("xlsPreview").innerHTML = preview.length
+        ? `<tr><td><pre style="margin:0; white-space:pre-wrap; font-family: var(--mono); color: var(--text)">${escapeHtml(preview.join("\n"))}</pre></td></tr>`
+        : `<tr><td class="muted">Sem prévia (nenhum prazo encontrado nas primeiras linhas importadas).</td></tr>`;
+
+      toast("ok","Importação concluída", `${prazosAdd} prazo(s) adicionados.`);
+    }catch(e){
+      console.error(e);
+      logXLS("Erro ao importar: " + ((e && e.message) || e));
+      toast("bad","Erro ao importar", ((e && e.message) || String(e)));
+    }
+  }
+
+
+  // ===== Render: geral =====
+  function renderCadastrosForPrazoForm(){
+  }
+
+  function renderClientes(){
+    renderCadastrosPainel();
+    renderPainelDetalhe();
+    renderCadastrosList();
+    renderCadastroVinculos();
+  }
+
+
+  function renderQuadro(){
+    const procs = Array.isArray(state.processos) ? state.processos : [];
+    const prazos = Array.isArray(state.prazos) ? state.prazos : [];
+
+    let total = procs.length;
+    let ativos=0, baixados=0, arquivados=0;
+    let valorTotal = 0;
+
+    for(const p of procs){
+      const g = String(p.statusGroup || "ativo");
+      if(g==="ativo") ativos++;
+      else if(g==="baixado") baixados++;
+      else arquivados++;
+      const v = Number(p.valorCausa || 0);
+      if(isFinite(v)) valorTotal += v;
+    }
+
+    const fmt = (n)=> formatBRL(n||0);
+
+    // prazos: abertos/vencidos/7d
+    const hoje = hojeISO();
+    let abertos=0, vencidos=0, em7d=0;
+    const openProcKeys = new Set();
+    for(const pr of prazos){
+      if(pr && pr.processo){
+        const k = procKey(pr.processo);
+        if(k) openProcKeys.add(k);
+      }
+      const isArch = !!pr.archived;
+      if(!isArch){
+        abertos++;
+        const dd = diffDias(pr.data, hoje);
+        if(dd < 0) vencidos++;
+        if(dd >= 0 && dd <= 7) em7d++;
+      }
+    }
+
+    let semPrazo = 0;
+    for(const p of procs){
+      const k = p.procKey || procKey(p.numero || p.processo || "");
+      if(k && !openProcKeys.has(k)) semPrazo++;
+    }
+
+    // antigo/recente por distribuição (fallback lastEventTs)
+    const toTs = (iso)=>{
+      if(!iso) return 0;
+      const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if(!m) return 0;
+      const dt = new Date(Number(m[1]), Number(m[2])-1, Number(m[3]));
+      return dt.getTime();
+    };
+
+    let oldest = null, newest = null;
+    for(const p of procs){
+      const t = toTs(p.distribuicao) || Number(p.lastEventTs||0) || 0;
+      if(!t) continue;
+      if(!oldest || t < oldest.t) oldest = {t, p};
+      if(!newest || t > newest.t) newest = {t, p};
+    }
+
+    const fmtProcLine = (p)=>{
+      if(!p) return "—";
+      const num = p.numero || p.processo || "—";
+      const partes = (p.autores && p.reus) ? (p.autores + " X " + p.reus) : (p.partes || "");
+      return String(num) + (partes ? " • " + partes : "");
+    };
+
+    const elTotal = $("qTotalProc"); if(elTotal) elTotal.textContent = String(total);
+    const elAt = $("qAtivos"); if(elAt) elAt.textContent = String(ativos);
+    const elBx = $("qBaixados"); if(elBx) elBx.textContent = String(baixados);
+    const elAr = $("qArquivados"); if(elAr) elAr.textContent = String(arquivados);
+    const elVal = $("qValorTotal"); if(elVal) elVal.textContent = fmt(valorTotal);
+
+    const elAb = $("qPrazosAbertos"); if(elAb) elAb.textContent = String(abertos);
+    const elVe = $("qPrazosVencidos"); if(elVe) elVe.textContent = String(vencidos);
+    const el7 = $("qPrazos7d"); if(el7) el7.textContent = String(em7d);
+    const elSP = $("qSemPrazo"); if(elSP) elSP.textContent = String(semPrazo);
+
+    const elOld = $("qProcAntigo"); if(elOld) elOld.textContent = oldest ? fmtProcLine(oldest.p) : "—";
+    const elNew = $("qProcRecente"); if(elNew) elNew.textContent = newest ? fmtProcLine(newest.p) : "—";
+
+    // top 5 valores
+    const top = procs
+      .filter(p=> Number(p.valorCausa||0) > 0)
+      .slice()
+      .sort((a,b)=> Number(b.valorCausa||0) - Number(a.valorCausa||0))
+      .slice(0,5);
+
+    const tbody = $("qTopValores");
+    if(tbody){
+      tbody.innerHTML = top.map(p=>{
+        const num = escapeHtml(p.numero || p.processo || "—");
+        const partes = escapeHtml((p.autores && p.reus) ? (p.autores + " X " + p.reus) : (p.partes || "—"));
+        const val = escapeHtml(fmt(Number(p.valorCausa||0)));
+        const dist = escapeHtml(p.distribuicao ? formatData(p.distribuicao) : "—");
+        const st = escapeHtml((p.statusGroup||"").toUpperCase() || "—");
+        return `<tr>
+          <td class="mono">${num}</td>
+          <td>${partes}</td>
+          <td style="text-align:right">${val}</td>
+          <td>${dist}</td>
+          <td><span class="status ${p.statusGroup||"ativo"}">${st}</span></td>
+        </tr>`;
+      }).join("") || `<tr><td colspan="5" class="muted">Sem valores cadastrados.</td></tr>`;
+    }
+  }
+
+  function renderAll(){
+    renderLogo();
+    renderDashboard();
+    renderCadastrosForPrazoForm();
+    renderPrazos();
+    renderProcessos();
+    renderQuadro();
+    renderClientes();
+    // contadores de abas
+    const bp = $("badgePrazos");
+    if(bp) bp.textContent = String(state.prazos.length);
+    const bpr = $("badgeProcessos");
+    if(bpr) bpr.textContent = String(state.processos.length);
+  }
+
+  // ===== Filtros rápidos =====
+  function filtrarPrazosPorCadastro(cadId){
+    // seta busca e troca pra aba Prazos
+    const c = getCadastroById(cadId);
+    if(!c){ setActiveTab("prazos"); return; }
+    $("prazoBusca").value = c.nome;
+    setActiveTab("prazos");
+    renderPrazos();
+    toast("brand","Filtro aplicado", `Mostrando prazos ligados a: ${c.nome}`);
+  }
+
+  // ===== Expor handlers (para onclick em tabela) =====
+  window.__editPrazo = editPrazo;
+  window.__delPrazo = deletePrazo;
+  window.__editComentario = openComentario;
+  window.__selPainel = (id)=>{ setClientesSub("painel"); setActiveTab("clientes"); selectPainelCad(id); };
+  window.__selCad = (id)=>{ setClientesSub("cadastros"); setActiveTab("clientes"); selectCadastro(id); };
+  window.__abrirCad = (id)=>{ setClientesSub("cadastros"); setActiveTab("clientes"); selectCadastro(id); };
+  window.__filtrarCadastro = filtrarPrazosPorCadastro;
+  window.__selProc = (id)=>{ selectedProcId = id; setActiveTab("processos"); renderProcessos(); renderProcDetalhe(); };
+  window.__gotoPrazosProc = (numero)=>{ $("prazoBusca").value = String(numero||""); setActiveTab("prazos"); renderPrazos(); toast("brand","Filtro","Mostrando prazos do processo."); };
+
+  // ===== Wire-up =====
+  function wire(){
+    // tabs topo
+    eachNode("nav .tab", (btn)=>{
+      bindTap(btn, function(){ setActiveTab(btn.dataset.target); });
+    });
+
+    // subtabs clientes
+    eachNode("#clienteSubtabs .subtab", (btn)=>{
+      bindTap(btn, function(){ setClientesSub(btn.dataset.sub); });
+    });
+
+    // subtabs admin
+    eachNode("#adminSubtabs .subtab", (btn)=>{
+      bindTap(btn, function(){ setAdminSub(btn.dataset.sub); });
+    });
+
+    // prazos inputs
+    $("prazoBusca").addEventListener("input", renderPrazos);
+    $("prazoOrdem").addEventListener("change", renderPrazos);
+    $("prazoMostrarArquivados").addEventListener("change", renderPrazos);
+
+    // processos inputs
+    on("procBusca","input", renderProcessos);
+    on("procFiltro","change", renderProcessos);
+    on("procOrdem","change", renderProcessos);
+    on("procSomenteComPrazo","change", renderProcessos);
+
+    $("btnNovoPrazo").addEventListener("click", ()=>{
+      clearPrazoForm();
+      showPrazoForm(true);
+      $("prazoDesc").focus();
+    });
+    $("btnFecharPrazo").addEventListener("click", ()=> showPrazoForm(false));
+
+    $("btnSalvarPrazo").addEventListener("click", savePrazo);
+    $("btnLimparPrazo").addEventListener("click", ()=>{
+      clearPrazoForm();
+      $("prazoDesc").focus();
+    });
+// painel inputs
+    $("cliPainelBusca").addEventListener("input", renderCadastrosPainel);
+    $("cliPainelOrdem").addEventListener("change", ()=>{ renderCadastrosPainel(); renderPainelDetalhe(); });
+
+    // cadastros inputs
+    $("cadBusca").addEventListener("input", renderCadastrosList);
+    $("btnNovoCadastro").addEventListener("click", ()=>{ setClientesSub("cadastros"); newCadastro(); });
+    $("btnSalvarCadastro").addEventListener("click", saveCadastro);
+    $("btnLimparCadastro").addEventListener("click", clearCadastroForm);
+    $("btnExcluirCadastro").addEventListener("click", deleteCadastro);
+
+    // logo
+    $("logoInput").addEventListener("change", async (e)=>{
+      const file = e.target.files && e.target.files[0];
+      if(!file) return;
+      try{
+        // Processa e remove pretos → transparência
+        state.logoDataUrl = await makeBlackTransparent(file);
+        save();
+        toast("ok","Logo atualizada","Pretos convertidos em transparência e logo salva no navegador.");
+      }catch(err){
+        console.error(err);
+        toast("bad","Falha na logo","Não consegui processar a imagem.");
+      }
+      e.target.value = "";
+    });
+$("btnRemoverLogo").addEventListener("click", ()=>{
+      if(!state.logoDataUrl){ toast("warn","Sem logo","Nenhuma logo definida."); return; }
+      if(!confirm("Remover a logo salva?")) return;
+      state.logoDataUrl = null;
+      save();
+      toast("bad","Logo removida","Voltamos ao ícone padrão.");
+    });
+
+    // exportação
+    on("btnExportarBase","click", exportarBase);
+    on("btnExportarTXT","click", exportarBackupTXT);
+    on("btnExportarApp","click", exportarAppCompletoHTML);
+
+    const txtFile = $("txtBackupFile");
+    const btnTxtImp = $("btnImportarTXT");
+    onEl(txtFile,"change", ()=>{
+      btnTxtImp.disabled = !(txtFile.files && txtFile.files[0]);
+    });
+    onEl(btnTxtImp,"click", ()=>{
+      if(!(txtFile.files && txtFile.files[0])) return;
+      if(!confirm("Importar backup substituirá os dados atuais. Continuar?")) return;
+      importarBackupTXT(txtFile.files[0]);
+      txtFile.value = "";
+      btnTxtImp.disabled = true;
+    });
+
+    // importar
+    const xls = $("xlsFile");
+    const btnImp = $("btnImportar");
+    xls.addEventListener("change", ()=>{
+      btnImp.disabled = !(xls.files && xls.files[0]);
+      if(xls.files && xls.files[0]){
+        logXLS(`Arquivo selecionado: ${xls.files[0].name}. Clique em “Importar prazos”.`);
+      }else{
+        logXLS("Aguardando arquivo…");
+      }
+    });
+    btnImp.addEventListener("click", importar);
+    $("btnApagarXLS").addEventListener("click", wipeXLS);
+    $("btnApagarPrazos").addEventListener("click", wipePrazos);
+
+    // comentários (modal)
+    on("btnFecharComent","click", closeComentario);
+    on("btnCancelarComent","click", closeComentario);
+    on("btnSalvarComent","click", salvarComentario);
+    on("comentModal","click",(e)=>{ if(e.target=== $("comentModal")) closeComentario(); });
+    document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") closeComentario(); });
+
+    // drag & drop
+    const dz = $("dropzone");
+    dz.addEventListener("dragover", (e)=>{ e.preventDefault(); dz.classList.add("dragover"); });
+    dz.addEventListener("dragleave", ()=> dz.classList.remove("dragover"));
+    dz.addEventListener("drop", (e)=>{
+      e.preventDefault();
+      dz.classList.remove("dragover");
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if(f){
+        xls.files = e.dataTransfer.files;
+        btnImp.disabled = false;
+        logXLS(`Arquivo recebido: ${f.name}. Clique em “Importar prazos”.`);
+        toast("brand","Arquivo recebido", f.name);
+      }
+    });
+  }
+
+  // ===== Boot =====
+  try{
+    load();
+    normalizeState();
+    seedCadastros();
+    renderLogo();
+    wire();
+    renderAll();
+  }catch(e){
+    showFatal(e);
+  }
+
+  
+  showPrazoForm(false);
+// garante subtabs padrão
+  setClientesSub("painel");
+  setAdminSub("config");
+
+  // evita painel vazio se não selecionado
+  if(state.cadastros[0] && !selectedPainelCadId){
+    selectedPainelCadId = state.cadastros[0].id;
+    renderCadastrosPainel();
+    renderPainelDetalhe();
+  }
+
+})();
+</script>
+
+
+</body></html>
